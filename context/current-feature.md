@@ -10,6 +10,16 @@ Completed
 
 ## History
 
+### Dashboard UI Phase 3 — main area content
+
+- The main area to the right
+- Recent collections
+- Pinned Items
+- 10 Recent items
+- 4 stats cards at the top for number of items, collections, favorite items and favorite collections (Not in screenshot)
+- Use mock data from `@src/lib/mock-data.ts` (import directly until database)
+- Match layout to `@context/screenshots/dashboard-ui-main.png`
+
 ### Dashboard UI Phase 2 — collapsible sidebar
 
 - Collapsible sidebar
