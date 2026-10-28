@@ -3,7 +3,7 @@
 import type { ReactNode } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Folder, Star } from "lucide-react";
+import { Star } from "lucide-react";
 
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -14,18 +14,20 @@ import {
   ITEM_TYPE_ICONS,
   PRO_ITEM_TYPES,
 } from "@/lib/constants/item-types";
-import {
-  collections,
-  currentUser,
-  items,
-  itemTypes,
-  type Collection,
-} from "@/lib/mock-data";
+import type {
+  SidebarCollection,
+  SidebarCollections,
+  SidebarRecentCollection,
+} from "@/lib/db/collections";
+import type { SidebarItemType } from "@/lib/db/items";
+import { currentUser } from "@/lib/mock-data";
 import { cn } from "@/lib/utils";
 
 interface DashboardSidebarProps {
   collapsed?: boolean;
   onNavigate?: () => void;
+  itemTypes: SidebarItemType[];
+  collections: SidebarCollections;
 }
 
 function getInitials(name: string): string {
@@ -35,28 +37,6 @@ function getInitials(name: string): string {
     .join("")
     .slice(0, 2)
     .toUpperCase();
-}
-
-function getItemCount(itemTypeId: string): number {
-  return items.filter((item) => item.itemTypeId === itemTypeId).length;
-}
-
-function getFavoriteCollections(): Collection[] {
-  return collections.filter((collection) => collection.isFavorite);
-}
-
-function getRecentCollections(): Collection[] {
-  const favoriteIds = new Set(
-    getFavoriteCollections().map((collection) => collection.id)
-  );
-
-  return [...collections]
-    .filter((collection) => !favoriteIds.has(collection.id))
-    .sort(
-      (a, b) =>
-        new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
-    )
-    .slice(0, 4);
 }
 
 function NavSectionLabel({ children }: { children: ReactNode }) {
@@ -125,12 +105,61 @@ function SidebarLink({
   );
 }
 
+function TypeDot({ color }: { color: string | null }) {
+  return (
+    <span
+      className="size-2.5 rounded-full bg-muted-foreground/40"
+      style={color ? { backgroundColor: color } : undefined}
+      aria-hidden
+    />
+  );
+}
+
+function FavoriteCollectionLinks({
+  collections,
+  onNavigate,
+}: {
+  collections: SidebarCollection[];
+  onNavigate?: () => void;
+}) {
+  return collections.map((collection) => (
+    <SidebarLink
+      key={collection.id}
+      href={`/collections/${collection.id}`}
+      label={collection.name}
+      icon={<Star className="fill-current" />}
+      iconColor="#fde047"
+      onNavigate={onNavigate}
+    />
+  ));
+}
+
+function RecentCollectionLinks({
+  collections,
+  onNavigate,
+}: {
+  collections: SidebarRecentCollection[];
+  onNavigate?: () => void;
+}) {
+  return collections.map((collection) => (
+    <SidebarLink
+      key={collection.id}
+      href={`/collections/${collection.id}`}
+      label={collection.name}
+      icon={<TypeDot color={collection.accentColor} />}
+      onNavigate={onNavigate}
+    />
+  ));
+}
+
 export function DashboardSidebar({
   collapsed = false,
   onNavigate,
+  itemTypes,
+  collections,
 }: DashboardSidebarProps) {
-  const favoriteCollections = getFavoriteCollections();
-  const recentCollections = getRecentCollections();
+  const pathname = usePathname();
+  const viewAllActive = pathname === "/collections";
 
   return (
     <div className="flex h-full flex-col bg-sidebar text-sidebar-foreground">
@@ -147,7 +176,7 @@ export function DashboardSidebar({
                 label={getItemTypeLabel(type.name)}
                 icon={Icon ? <Icon /> : null}
                 iconColor={type.color}
-                count={getItemCount(type.id)}
+                count={type.count}
                 badge={PRO_ITEM_TYPES.has(type.name) ? "Pro" : undefined}
                 collapsed={collapsed}
                 onNavigate={onNavigate}
@@ -157,28 +186,38 @@ export function DashboardSidebar({
 
           {!collapsed && (
             <>
-              <NavSectionLabel>Favorites</NavSectionLabel>
-              {favoriteCollections.map((collection) => (
-                <SidebarLink
-                  key={collection.id}
-                  href={`/collections/${collection.id}`}
-                  label={collection.name}
-                  icon={<Star className="fill-current" />}
-                  iconColor="#fde047"
-                  onNavigate={onNavigate}
-                />
-              ))}
+              {collections.favorites.length > 0 ? (
+                <>
+                  <NavSectionLabel>Favorites</NavSectionLabel>
+                  <FavoriteCollectionLinks
+                    collections={collections.favorites}
+                    onNavigate={onNavigate}
+                  />
+                </>
+              ) : null}
 
-              <NavSectionLabel>Recent</NavSectionLabel>
-              {recentCollections.map((collection) => (
-                <SidebarLink
-                  key={collection.id}
-                  href={`/collections/${collection.id}`}
-                  label={collection.name}
-                  icon={<Folder />}
-                  onNavigate={onNavigate}
-                />
-              ))}
+              {collections.recent.length > 0 ? (
+                <>
+                  <NavSectionLabel>Recent</NavSectionLabel>
+                  <RecentCollectionLinks
+                    collections={collections.recent}
+                    onNavigate={onNavigate}
+                  />
+                </>
+              ) : null}
+
+              <Link
+                href="/collections"
+                onClick={onNavigate}
+                className={cn(
+                  "mt-1 block rounded-md px-2 py-1.5 text-xs font-medium transition-colors",
+                  viewAllActive
+                    ? "bg-sidebar-accent text-sidebar-accent-foreground"
+                    : "text-muted-foreground hover:bg-sidebar-accent/70 hover:text-sidebar-accent-foreground"
+                )}
+              >
+                View all collections
+              </Link>
             </>
           )}
         </nav>

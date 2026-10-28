@@ -25,6 +25,23 @@ export interface ItemStats {
   favorites: number;
 }
 
+export interface SidebarItemType {
+  id: string;
+  name: string;
+  color: string;
+  count: number;
+}
+
+const SIDEBAR_TYPE_ORDER = [
+  "snippet",
+  "prompt",
+  "command",
+  "note",
+  "file",
+  "image",
+  "link",
+] as const;
+
 const getDemoUserId = cache(async (): Promise<string | null> => {
   await connection();
 
@@ -34,6 +51,13 @@ const getDemoUserId = cache(async (): Promise<string | null> => {
 
   return user?.id ?? null;
 });
+
+function sidebarTypeRank(name: string): number {
+  const index = SIDEBAR_TYPE_ORDER.indexOf(
+    name as (typeof SIDEBAR_TYPE_ORDER)[number]
+  );
+  return index === -1 ? SIDEBAR_TYPE_ORDER.length : index;
+}
 
 function toIsoTimestamp(value: string): string {
   if (value.endsWith("Z") || /[+-]\d{2}:?\d{2}$/.test(value)) return value;
@@ -91,6 +115,33 @@ export async function getRecentItems(): Promise<DashboardItem[]> {
 
   const rows = await itemQuery(userId, false).limit(RECENT_ITEM_LIMIT).all();
   return rows.map(toDashboardItem);
+}
+
+export async function getSidebarItemTypes(): Promise<SidebarItemType[]> {
+  const userId = await getDemoUserId();
+
+  const types = await db.orm.public.ItemType.where({ isSystem: true })
+    .select("id", "name", "color")
+    .all();
+
+  const counts = userId
+    ? await db.orm.public.Item.where({ userId })
+        .groupBy("itemTypeId")
+        .aggregate((agg) => ({ total: agg.count() }))
+    : [];
+
+  const countByTypeId = new Map(
+    counts.map((row) => [row.itemTypeId, row.total])
+  );
+
+  return types
+    .map((type) => ({
+      id: type.id,
+      name: type.name,
+      color: type.color,
+      count: countByTypeId.get(type.id) ?? 0,
+    }))
+    .sort((a, b) => sidebarTypeRank(a.name) - sidebarTypeRank(b.name));
 }
 
 export async function getItemStats(): Promise<ItemStats> {

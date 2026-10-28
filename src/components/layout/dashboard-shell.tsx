@@ -13,15 +13,23 @@ import {
   SheetHeader,
   SheetTitle,
 } from "@/components/ui/sheet";
+import type { SidebarCollections } from "@/lib/db/collections";
+import type { SidebarItemType } from "@/lib/db/items";
 import { cn } from "@/lib/utils";
 
 interface DashboardShellProps {
   children: ReactNode;
+  itemTypes: SidebarItemType[];
+  collections: SidebarCollections;
 }
 
 const LG_QUERY = "(min-width: 1024px)";
 
-export function DashboardShell({ children }: DashboardShellProps) {
+export function DashboardShell({
+  children,
+  itemTypes,
+  collections,
+}: DashboardShellProps) {
   const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
 
@@ -57,7 +65,11 @@ export function DashboardShell({ children }: DashboardShellProps) {
             collapsed ? "w-16" : "w-64"
           )}
         >
-          <DashboardSidebar collapsed={collapsed} />
+          <DashboardSidebar
+            collapsed={collapsed}
+            itemTypes={itemTypes}
+            collections={collections}
+          />
         </aside>
 
         <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
@@ -72,7 +84,11 @@ export function DashboardShell({ children }: DashboardShellProps) {
                 Browse item types and collections
               </SheetDescription>
             </SheetHeader>
-            <DashboardSidebar onNavigate={() => setMobileOpen(false)} />
+            <DashboardSidebar
+              itemTypes={itemTypes}
+              collections={collections}
+              onNavigate={() => setMobileOpen(false)}
+            />
           </SheetContent>
         </Sheet>
 

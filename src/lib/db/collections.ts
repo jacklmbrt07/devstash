@@ -39,6 +39,22 @@ export interface CollectionStats {
   favorites: number;
 }
 
+export interface SidebarCollection {
+  id: string;
+  name: string;
+}
+
+export interface SidebarRecentCollection extends SidebarCollection {
+  accentColor: string | null;
+}
+
+export interface SidebarCollections {
+  favorites: SidebarCollection[];
+  recent: SidebarRecentCollection[];
+}
+
+const SIDEBAR_RECENT_LIMIT = 4;
+
 const getDemoUserId = cache(async (): Promise<string | null> => {
   await connection();
 
@@ -121,6 +137,44 @@ export async function getRecentCollections(): Promise<DashboardCollection[]> {
       types: summary.types,
     };
   });
+}
+
+export async function getSidebarCollections(): Promise<SidebarCollections> {
+  const userId = await getDemoUserId();
+  if (!userId) return { favorites: [], recent: [] };
+
+  const [favoriteRows, recentRows] = await Promise.all([
+    db.orm.public.Collection.where({ userId, isFavorite: true })
+      .orderBy((collection) => collection.updatedAt.desc())
+      .select("id", "name")
+      .all(),
+    db.orm.public.Collection.where({ userId, isFavorite: false })
+      .orderBy((collection) => collection.updatedAt.desc())
+      .limit(SIDEBAR_RECENT_LIMIT)
+      .include("itemCollections", (links) =>
+        links.include("item", (item) =>
+          item
+            .select("id")
+            .include("itemType", (itemType) => itemType.select("name", "color"))
+        )
+      )
+      .all(),
+  ]);
+
+  return {
+    favorites: favoriteRows.map((row) => ({ id: row.id, name: row.name })),
+    recent: recentRows.map((row) => ({
+      id: row.id,
+      name: row.name,
+      accentColor: summarizeCollectionTypes(
+        row.itemCollections.flatMap((link) => {
+          const itemType = link.item?.itemType;
+          if (!itemType) return [];
+          return [{ name: itemType.name, color: itemType.color }];
+        })
+      ).borderColor,
+    })),
+  };
 }
 
 export async function getCollectionStats(): Promise<CollectionStats> {

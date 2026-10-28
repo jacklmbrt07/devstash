@@ -10,6 +10,15 @@ Completed
 
 ## History
 
+### Stats and sidebar
+
+- Stats cards keep the current layout and read item, collection, and favorite counts from the database
+- Sidebar system item types, icons, and counts load from Neon via `getSidebarItemTypes` in `src/lib/db/items.ts`
+- Type links go to `/items/[type]` (for example `/items/snippets`)
+- Favorite collections keep the star; recent collections show a colored circle from the most-used item type
+- "View all collections" under the collections list goes to `/collections`
+- Sidebar user area stays on mock data until authentication
+
 ### Dashboard items
 
 - Pinned and recent items load from Neon via Prisma (`src/lib/db/items.ts`), fetched in the dashboard server component
