@@ -5,17 +5,30 @@ import {
   getCollectionStats,
   getRecentCollections,
 } from "@/lib/db/collections";
+import { getItemStats, getPinnedItems, getRecentItems } from "@/lib/db/items";
 
-async function DashboardCollections() {
-  const [recentCollections, collectionStats] = await Promise.all([
+async function DashboardContent() {
+  const [
+    recentCollections,
+    collectionStats,
+    pinnedItems,
+    recentItems,
+    itemStats,
+  ] = await Promise.all([
     getRecentCollections(),
     getCollectionStats(),
+    getPinnedItems(),
+    getRecentItems(),
+    getItemStats(),
   ]);
 
   return (
     <DashboardMain
       recentCollections={recentCollections}
       collectionStats={collectionStats}
+      pinnedItems={pinnedItems}
+      recentItems={recentItems}
+      itemStats={itemStats}
     />
   );
 }
@@ -27,7 +40,7 @@ export default function DashboardPage() {
         <p className="text-sm text-muted-foreground">Loading dashboard…</p>
       }
     >
-      <DashboardCollections />
+      <DashboardContent />
     </Suspense>
   );
 }

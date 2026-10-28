@@ -10,6 +10,15 @@ Completed
 
 ## History
 
+### Dashboard items
+
+- Pinned and recent items load from Neon via Prisma (`src/lib/db/items.ts`), fetched in the dashboard server component
+- Pinned section is hidden when `demo@devstash.io` has no pinned items
+- Up to 10 most recently updated items
+- Icon, left border, and type label come from the item type; tags show when present
+- Item and favorite-item stats come from the database
+- Sidebar stays on mock data
+
 ### Dashboard collections
 
 - Recent collection cards load from Neon via Prisma (`src/lib/db/collections.ts`), fetched in the dashboard server component

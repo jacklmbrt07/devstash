@@ -19,27 +19,13 @@ import {
   getItemTypeLabel,
   ITEM_TYPE_ICONS,
 } from "@/lib/constants/item-types";
-import { formatRelativeTime } from "@/lib/format-relative-time";
-import {
-  collections,
-  currentUser,
-  items,
-  itemTypes,
-  type Item,
-  type ItemType,
-} from "@/lib/mock-data";
 import type {
   CollectionStats,
   DashboardCollection,
 } from "@/lib/db/collections";
-
-/** Newest mock timestamp — keeps relative labels stable during static prerender. */
-const MOCK_NOW = new Date(
-  Math.max(
-    ...items.map((item) => new Date(item.updatedAt).getTime()),
-    ...collections.map((collection) => new Date(collection.updatedAt).getTime())
-  )
-);
+import type { DashboardItem, ItemStats } from "@/lib/db/items";
+import { formatRelativeTime } from "@/lib/format-relative-time";
+import { currentUser } from "@/lib/mock-data";
 
 interface StatCard {
   label: string;
@@ -52,30 +38,14 @@ function getFirstName(name: string): string {
   return name.split(" ")[0] ?? name;
 }
 
-function getItemType(itemTypeId: string): ItemType | undefined {
-  return itemTypes.find((type) => type.id === itemTypeId);
-}
-
-function getPinnedItems(): Item[] {
-  return items.filter((item) => item.isPinned);
-}
-
-function getRecentItems(): Item[] {
-  return [...items]
-    .sort(
-      (a, b) =>
-        new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
-    )
-    .slice(0, 10);
-}
-
-function getStats(collectionStats: CollectionStats): StatCard[] {
-  const favoriteItems = items.filter((item) => item.isFavorite).length;
-
+function getStats(
+  collectionStats: CollectionStats,
+  itemStats: ItemStats
+): StatCard[] {
   return [
     {
       label: "Items",
-      value: items.length,
+      value: itemStats.total,
       hint: "Across all types",
       icon: Layers,
     },
@@ -87,7 +57,7 @@ function getStats(collectionStats: CollectionStats): StatCard[] {
     },
     {
       label: "Favorite items",
-      value: favoriteItems,
+      value: itemStats.favorites,
       hint: "Starred for quick access",
       icon: Star,
     },
@@ -209,16 +179,18 @@ function CollectionCard({ collection }: { collection: DashboardCollection }) {
   );
 }
 
-function ItemRow({ item }: { item: Item }) {
-  const type = getItemType(item.itemTypeId);
-  const Icon = type ? ITEM_TYPE_ICONS[type.name] : undefined;
-  const typeLabel = type ? getItemTypeLabel(type.name) : "Item";
+function ItemRow({ item }: { item: DashboardItem }) {
+  const Icon = ITEM_TYPE_ICONS[item.typeName];
+  const typeLabel = getItemTypeLabel(item.typeName);
 
   return (
-    <div className="flex items-center gap-3 px-3 py-2.5 transition-colors hover:bg-muted/50">
+    <div
+      className="flex items-center gap-3 border-l-[3px] px-3 py-2.5 transition-colors hover:bg-muted/50"
+      style={{ borderLeftColor: item.typeColor }}
+    >
       <span
         className="flex size-8 shrink-0 items-center justify-center rounded-md bg-muted"
-        style={type ? { color: type.color } : undefined}
+        style={{ color: item.typeColor }}
         title={typeLabel}
       >
         {Icon ? <Icon className="size-4" /> : null}
@@ -233,21 +205,35 @@ function ItemRow({ item }: { item: Item }) {
             <Star className="size-3.5 shrink-0 fill-current text-[#fde047]" />
           ) : null}
         </div>
-        <p className="truncate text-xs text-muted-foreground">
-          {item.description}
-        </p>
+        {item.description ? (
+          <p className="truncate text-xs text-muted-foreground">
+            {item.description}
+          </p>
+        ) : null}
+        {item.tags.length > 0 ? (
+          <div className="mt-1.5 flex flex-wrap gap-1.5">
+            {item.tags.map((tag) => (
+              <span
+                key={tag}
+                className="rounded-md bg-muted px-1.5 py-0.5 text-[11px] text-muted-foreground"
+              >
+                {tag}
+              </span>
+            ))}
+          </div>
+        ) : null}
       </div>
       <div className="hidden shrink-0 text-right sm:block">
         <p className="text-xs text-muted-foreground">{typeLabel}</p>
         <p className="text-xs text-muted-foreground">
-          {formatRelativeTime(item.updatedAt, MOCK_NOW)}
+          {formatRelativeTime(item.updatedAt, new Date())}
         </p>
       </div>
     </div>
   );
 }
 
-function ItemList({ items: list }: { items: Item[] }) {
+function ItemList({ items: list }: { items: DashboardItem[] }) {
   return (
     <div className="overflow-hidden rounded-xl ring-1 ring-foreground/10">
       <div className="divide-y divide-border">
@@ -262,13 +248,17 @@ function ItemList({ items: list }: { items: Item[] }) {
 export function DashboardMain({
   recentCollections,
   collectionStats,
+  pinnedItems,
+  recentItems,
+  itemStats,
 }: {
   recentCollections: DashboardCollection[];
   collectionStats: CollectionStats;
+  pinnedItems: DashboardItem[];
+  recentItems: DashboardItem[];
+  itemStats: ItemStats;
 }) {
-  const stats = getStats(collectionStats);
-  const pinnedItems = getPinnedItems();
-  const recentItems = getRecentItems();
+  const stats = getStats(collectionStats, itemStats);
   const firstName = getFirstName(currentUser.name);
 
   return (
@@ -300,18 +290,20 @@ export function DashboardMain({
         )}
       </section>
 
-      <section>
-        <SectionHeading title="Pinned items" count={pinnedItems.length} />
-        {pinnedItems.length > 0 ? (
+      {pinnedItems.length > 0 ? (
+        <section>
+          <SectionHeading title="Pinned items" count={pinnedItems.length} />
           <ItemList items={pinnedItems} />
-        ) : (
-          <p className="text-sm text-muted-foreground">No pinned items yet.</p>
-        )}
-      </section>
+        </section>
+      ) : null}
 
       <section>
         <SectionHeading title="Recent items" count={recentItems.length} />
-        <ItemList items={recentItems} />
+        {recentItems.length > 0 ? (
+          <ItemList items={recentItems} />
+        ) : (
+          <p className="text-sm text-muted-foreground">No recent items yet.</p>
+        )}
       </section>
     </div>
   );
