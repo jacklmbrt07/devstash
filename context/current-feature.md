@@ -10,6 +10,14 @@ Completed
 
 ## History
 
+### Seed data script
+
+- Seed script at `prisma/seed.ts` (`npm run db:seed`)
+- Demo user: `demo@devstash.io` / `12345678` (bcryptjs, 12 rounds)
+- System item types: snippet, prompt, command, note, file, image, link
+- 5 collections with 18 sample items (React Patterns, AI Workflows, DevOps, Terminal Commands, Design Resources)
+- Idempotent: upserts user/types; skips existing collections by name
+
 ### Prisma + Neon PostgreSQL setup
 
 - Use Neon PostgreSQL (serverless)
