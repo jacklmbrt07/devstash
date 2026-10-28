@@ -1,0 +1,166 @@
+// use prisma-8
+// Adopted from the live Neon development database (Prisma 7 init migration).
+
+namespace public {
+  model User {
+    id                   String              @id(map: "users_pkey") @onCreate(cuid(2))
+    email                String
+    emailVerified        TimestampString(3)?
+    name                 String?
+    image                String?
+    password             String?
+    isPro                Boolean             @default(false)
+    stripeCustomerId     String?
+    stripeSubscriptionId String?
+    createdAt            TimestampString(3)  @default(now())
+    updatedAt            TimestampString(3)  @onCreate(now()) @onUpdate(now())
+    accounts             Account[]
+    collections          Collection[]
+    itemTypes            ItemType[]
+    items                Item[]
+    sessions             Session[]
+
+    @@index([email], map: "users_email_key", unique: true)
+    @@index([stripeCustomerId], map: "users_stripeCustomerId_key", unique: true)
+    @@index([stripeSubscriptionId], map: "users_stripeSubscriptionId_key", unique: true)
+    @@map("users")
+  }
+
+  model Account {
+    id                String  @id(map: "accounts_pkey") @onCreate(cuid(2))
+    userId            String
+    type              String  @map("type")
+    provider          String
+    providerAccountId String
+    refreshToken      String? @map("refresh_token")
+    accessToken       String? @map("access_token")
+    expiresAt         Int?    @map("expires_at")
+    tokenType         String? @map("token_type")
+    scope             String?
+    idToken           String? @map("id_token")
+    sessionState      String? @map("session_state")
+    user              User    @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade, map: "accounts_userId_fkey", index: false)
+
+    @@index([provider, providerAccountId], map: "accounts_provider_providerAccountId_key", unique: true)
+    @@map("accounts")
+  }
+
+  model ItemType {
+    id          String       @id(map: "item_types_pkey") @onCreate(cuid(2))
+    name        String
+    icon        String
+    color       String
+    isSystem    Boolean      @default(false)
+    userId      String?
+    collections Collection[]
+    items       Item[]
+    user        User?        @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade, map: "item_types_userId_fkey", index: false)
+
+    @@index([name, userId], map: "item_types_name_userId_key", unique: true)
+    @@map("item_types")
+  }
+
+  model Collection {
+    id              String           @id(map: "collections_pkey") @onCreate(cuid(2))
+    name            String
+    description     String?
+    isFavorite      Boolean          @default(false)
+    createdAt       TimestampString(3) @default(now())
+    updatedAt       TimestampString(3) @onCreate(now()) @onUpdate(now())
+    userId          String
+    defaultTypeId   String?
+    itemCollections ItemCollection[]
+    defaultType     ItemType?        @relation(fields: [defaultTypeId], references: [id], onDelete: SetNull, onUpdate: Cascade, map: "collections_defaultTypeId_fkey", index: false)
+    user            User             @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade, map: "collections_userId_fkey")
+
+    @@index([userId], map: "collections_userId_idx")
+    @@map("collections")
+  }
+
+  model Item {
+    id              String             @id(map: "items_pkey") @onCreate(cuid(2))
+    title           String
+    contentType     pg.enum(ContentType)
+    content         String?
+    fileUrl         String?
+    fileName        String?
+    fileSize        Int?
+    url             String?
+    description     String?
+    isFavorite      Boolean            @default(false)
+    isPinned        Boolean            @default(false)
+    language        String?
+    createdAt       TimestampString(3) @default(now())
+    updatedAt       TimestampString(3) @onCreate(now()) @onUpdate(now())
+    userId          String
+    itemTypeId      String
+    itemTags        ItemTag[]
+    itemCollections ItemCollection[]
+    itemType        ItemType           @relation(fields: [itemTypeId], references: [id], onDelete: Restrict, onUpdate: Cascade, map: "items_itemTypeId_fkey")
+    user            User               @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade, map: "items_userId_fkey")
+
+    @@index([createdAt], map: "items_createdAt_idx")
+    @@index([itemTypeId], map: "items_itemTypeId_idx")
+    @@index([userId], map: "items_userId_idx")
+    @@map("items")
+  }
+
+  model ItemCollection {
+    itemId       String
+    collectionId String
+    addedAt      TimestampString(3) @default(now())
+    collection   Collection         @relation(fields: [collectionId], references: [id], onDelete: Cascade, onUpdate: Cascade, map: "item_collections_collectionId_fkey", index: false)
+    item         Item               @relation(fields: [itemId], references: [id], onDelete: Cascade, onUpdate: Cascade, map: "item_collections_itemId_fkey", index: "item_collections_pkey")
+
+    @@id([itemId, collectionId], map: "item_collections_pkey")
+    @@map("item_collections")
+  }
+
+  model Tag {
+    id       String    @id(map: "tags_pkey") @onCreate(cuid(2))
+    name     String
+    itemTags ItemTag[]
+
+    @@index([name], map: "tags_name_key", unique: true)
+    @@map("tags")
+  }
+
+  model ItemTag {
+    a    String @map("A")
+    b    String @map("B")
+    item Item   @relation(fields: [a], references: [id], onDelete: Cascade, onUpdate: Cascade, map: "_ItemTags_A_fkey", index: "_ItemTags_AB_pkey")
+    tag  Tag    @relation(fields: [b], references: [id], onDelete: Cascade, onUpdate: Cascade, map: "_ItemTags_B_fkey")
+
+    @@id([a, b], map: "_ItemTags_AB_pkey")
+    @@index([b], map: "_ItemTags_B_index")
+    @@map("_ItemTags")
+  }
+
+  model Session {
+    id           String             @id(map: "sessions_pkey") @onCreate(cuid(2))
+    sessionToken String
+    userId       String
+    expires      TimestampString(3)
+    user         User               @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade, map: "sessions_userId_fkey", index: false)
+
+    @@index([sessionToken], map: "sessions_sessionToken_key", unique: true)
+    @@map("sessions")
+  }
+
+  // Prisma 7 created this without a primary key; unique indexes remain.
+  model VerificationToken {
+    identifier String
+    token      String
+    expires    TimestampString(3)
+
+    @@index([identifier, token], map: "verification_tokens_identifier_token_key", unique: true)
+    @@index([token], map: "verification_tokens_token_key", unique: true)
+    @@map("verification_tokens")
+  }
+
+  native_enum ContentType {
+    TEXT = "TEXT"
+    FILE = "FILE"
+    URL  = "URL"
+  }
+}

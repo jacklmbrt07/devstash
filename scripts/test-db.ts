@@ -1,50 +1,44 @@
 import { config } from "dotenv";
-import { PrismaNeon } from "@prisma/adapter-neon";
 
-import { PrismaClient } from "../src/generated/prisma/client";
-
-// Prisma 7 / Node do not load .env automatically — use dotenv.
 config({ path: ".env.local" });
 config({ path: ".env", override: true });
 
-const connectionString = process.env.DATABASE_URL;
-
-if (!connectionString) {
-  throw new Error(
-    "DATABASE_URL is not set. Add it to .env (or .env.local) and try again."
-  );
-}
-
-const prisma = new PrismaClient({
-  adapter: new PrismaNeon({ connectionString }),
-});
-
 async function main() {
-  console.log("Testing database connection...");
+  const { db } = await import("../src/prisma/db");
 
-  const result = await prisma.$queryRaw<Array<{ ok: number }>>`SELECT 1 AS ok`;
-  const itemTypeCount = await prisma.itemType.count();
-  const userCount = await prisma.user.count();
+  console.log("Testing database connection (Prisma 8)...");
+
+  const ping = db.raw
+    .sql`SELECT 1::int AS ok`
+    .returnsRow({ ok: "pg/int4@1" as const })
+    .build();
+  const result = await db.query(ping);
+
+  const itemTypeStats = await db.orm.public.ItemType.aggregate((agg) => ({
+    total: agg.count(),
+  }));
+  const userStats = await db.orm.public.User.aggregate((agg) => ({
+    total: agg.count(),
+  }));
 
   console.log(
     JSON.stringify(
       {
-        ok: result[0]?.ok === 1,
+        ok: Number(result[0]?.ok) === 1,
+        prisma: "8",
         neonBranch: process.env.NEON_BRANCH ?? null,
-        itemTypeCount,
-        userCount,
+        itemTypeCount: itemTypeStats.total,
+        userCount: userStats.total,
       },
       null,
       2
     )
   );
+
+  await db.close();
 }
 
-main()
-  .catch((error) => {
-    console.error("Database test failed:", error);
-    process.exit(1);
-  })
-  .finally(async () => {
-    await prisma.$disconnect();
-  });
+main().catch((error) => {
+  console.error("Database test failed:", error);
+  process.exit(1);
+});
