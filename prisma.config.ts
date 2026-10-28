@@ -1,5 +1,6 @@
 import { config } from "dotenv";
-import { defineConfig, env } from "prisma/config";
+import { definePrismaConfig } from "prisma/config";
+import { defineConfig as definePostgresConfig } from "@prisma/orm-postgres/config";
 
 // Load Neon-pulled vars first, then let `.env` override (dev branch URL, etc.).
 config({ path: ".env.local" });
@@ -11,7 +12,7 @@ function resolveMigrationUrl(): string {
     throw new Error("DATABASE_URL is not set");
   }
 
-  // Migrations must use a direct (non-pooled) Neon connection.
+  // CLI / migrations need a direct (non-pooled) Neon connection.
   if (databaseUrl.includes("-pooler.")) {
     return databaseUrl.replace("-pooler.", ".");
   }
@@ -19,15 +20,15 @@ function resolveMigrationUrl(): string {
   return process.env.DATABASE_URL_UNPOOLED ?? databaseUrl;
 }
 
-process.env.DATABASE_URL_UNPOOLED = resolveMigrationUrl();
-
-export default defineConfig({
-  schema: "prisma/schema.prisma",
-  migrations: {
-    path: "prisma/migrations",
-    seed: "tsx prisma/seed.ts",
-  },
-  datasource: {
-    url: env("DATABASE_URL_UNPOOLED"),
-  },
+export default definePrismaConfig({
+  orm: definePostgresConfig({
+    contract: "src/prisma/contract.prisma",
+    output: "src/prisma",
+    migrations: {
+      dir: "migrations",
+    },
+    db: {
+      connection: resolveMigrationUrl(),
+    },
+  }),
 });

@@ -41,5 +41,5 @@ yarn-error.log*
 next-env.d.ts
 .neon
 
-# prisma generated client
-/src/generated/prisma
+# legacy Prisma 7 generated client (removed after Prisma 8 upgrade)
+/src/generated/
