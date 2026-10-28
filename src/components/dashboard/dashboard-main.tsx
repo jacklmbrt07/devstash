@@ -25,10 +25,13 @@ import {
   currentUser,
   items,
   itemTypes,
-  type Collection,
   type Item,
   type ItemType,
 } from "@/lib/mock-data";
+import type {
+  CollectionStats,
+  DashboardCollection,
+} from "@/lib/db/collections";
 
 /** Newest mock timestamp — keeps relative labels stable during static prerender. */
 const MOCK_NOW = new Date(
@@ -53,20 +56,6 @@ function getItemType(itemTypeId: string): ItemType | undefined {
   return itemTypes.find((type) => type.id === itemTypeId);
 }
 
-function getCollectionItemCount(collectionId: string): number {
-  return items.filter((item) => item.collectionIds.includes(collectionId))
-    .length;
-}
-
-function getRecentCollections(): Collection[] {
-  return [...collections]
-    .sort(
-      (a, b) =>
-        new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
-    )
-    .slice(0, 4);
-}
-
 function getPinnedItems(): Item[] {
   return items.filter((item) => item.isPinned);
 }
@@ -80,11 +69,8 @@ function getRecentItems(): Item[] {
     .slice(0, 10);
 }
 
-function getStats(): StatCard[] {
+function getStats(collectionStats: CollectionStats): StatCard[] {
   const favoriteItems = items.filter((item) => item.isFavorite).length;
-  const favoriteCollections = collections.filter(
-    (collection) => collection.isFavorite
-  ).length;
 
   return [
     {
@@ -95,7 +81,7 @@ function getStats(): StatCard[] {
     },
     {
       label: "Collections",
-      value: collections.length,
+      value: collectionStats.total,
       hint: "Organized groups",
       icon: Folder,
     },
@@ -107,7 +93,7 @@ function getStats(): StatCard[] {
     },
     {
       label: "Favorite collections",
-      value: favoriteCollections,
+      value: collectionStats.favorites,
       hint: "Collections you reach for",
       icon: FolderHeart,
     },
@@ -161,12 +147,19 @@ function StatsRow({ stats }: { stats: StatCard[] }) {
   );
 }
 
-function CollectionCard({ collection }: { collection: Collection }) {
-  const itemCount = getCollectionItemCount(collection.id);
+function CollectionCard({ collection }: { collection: DashboardCollection }) {
+  const itemCount = collection.itemCount;
 
   return (
     <Link href={`/collections/${collection.id}`} className="group block">
-      <Card className="h-full transition-colors hover:bg-accent/40">
+      <Card
+        className={`h-full border-l-[3px] transition-colors hover:bg-accent/40${collection.borderColor ? "" : " border-transparent"}`}
+        style={
+          collection.borderColor
+            ? { borderLeftColor: collection.borderColor }
+            : undefined
+        }
+      >
         <CardHeader>
           <div className="flex items-start justify-between gap-2">
             <CardTitle className="group-hover:text-foreground">
@@ -179,16 +172,37 @@ function CollectionCard({ collection }: { collection: Collection }) {
               />
             ) : null}
           </div>
-          <CardDescription className="line-clamp-2">
-            {collection.description}
-          </CardDescription>
+          {collection.description ? (
+            <CardDescription className="line-clamp-2">
+              {collection.description}
+            </CardDescription>
+          ) : null}
         </CardHeader>
         <CardContent>
           <p className="text-xs text-muted-foreground">
             <span className="tabular-nums">{itemCount}</span>{" "}
             {itemCount === 1 ? "item" : "items"} · Updated{" "}
-            {formatRelativeTime(collection.updatedAt, MOCK_NOW)}
+            {formatRelativeTime(collection.updatedAt, new Date())}
           </p>
+          {collection.types.length > 0 ? (
+            <div className="mt-3 flex items-center gap-2">
+              {collection.types.map((type) => {
+                const Icon = ITEM_TYPE_ICONS[type.name];
+                if (!Icon) return null;
+                const label = getItemTypeLabel(type.name);
+                return (
+                  <span
+                    key={type.name}
+                    className="flex size-5 items-center justify-center"
+                    style={{ color: type.color }}
+                    title={label}
+                  >
+                    <Icon className="size-3.5" aria-label={label} />
+                  </span>
+                );
+              })}
+            </div>
+          ) : null}
         </CardContent>
       </Card>
     </Link>
@@ -245,9 +259,14 @@ function ItemList({ items: list }: { items: Item[] }) {
   );
 }
 
-export function DashboardMain() {
-  const stats = getStats();
-  const recentCollections = getRecentCollections();
+export function DashboardMain({
+  recentCollections,
+  collectionStats,
+}: {
+  recentCollections: DashboardCollection[];
+  collectionStats: CollectionStats;
+}) {
+  const stats = getStats(collectionStats);
   const pinnedItems = getPinnedItems();
   const recentItems = getRecentItems();
   const firstName = getFirstName(currentUser.name);
@@ -270,11 +289,15 @@ export function DashboardMain() {
           title="Recent collections"
           count={recentCollections.length}
         />
-        <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-          {recentCollections.map((collection) => (
-            <CollectionCard key={collection.id} collection={collection} />
-          ))}
-        </div>
+        {recentCollections.length > 0 ? (
+          <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+            {recentCollections.map((collection) => (
+              <CollectionCard key={collection.id} collection={collection} />
+            ))}
+          </div>
+        ) : (
+          <p className="text-sm text-muted-foreground">No collections yet.</p>
+        )}
       </section>
 
       <section>
