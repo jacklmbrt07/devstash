@@ -10,6 +10,14 @@ Completed
 
 ## History
 
+### Dashboard collections
+
+- Recent collection cards load from Neon via Prisma (`src/lib/db/collections.ts`), fetched in the dashboard server component
+- Up to 6 most recently updated collections for `demo@devstash.io`
+- Card border color from the most-used item type; icons for every type in the collection
+- Collections and favorite-collections stats come from the database
+- Pinned items, recent items, and the sidebar stay on mock data
+
 ### Seed data script
 
 - Seed script at `prisma/seed.ts` (`npm run db:seed`)
