@@ -3,6 +3,17 @@ const HOUR = 60 * MINUTE;
 const DAY = 24 * HOUR;
 const WEEK = 7 * DAY;
 
+function isPreviousCalendarDay(then: Date, now: Date): boolean {
+  if (Number.isNaN(then.getTime())) return false;
+
+  const yesterday = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1);
+  return (
+    then.getFullYear() === yesterday.getFullYear() &&
+    then.getMonth() === yesterday.getMonth() &&
+    then.getDate() === yesterday.getDate()
+  );
+}
+
 export function formatAbsoluteDate(isoDate: string): string {
   return new Date(isoDate).toLocaleDateString("en-US", {
     month: "short",
@@ -24,7 +35,7 @@ export function formatRelativeTime(isoDate: string, now: Date): string {
     const hours = Math.floor(diff / HOUR);
     return `${hours}h ago`;
   }
-  if (diff < DAY * 2) return "Yesterday";
+  if (isPreviousCalendarDay(new Date(isoDate), now)) return "Yesterday";
   if (diff < WEEK) {
     const days = Math.floor(diff / DAY);
     return `${days}d ago`;

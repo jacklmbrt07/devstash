@@ -1,12 +1,20 @@
-# Current Feature
+# Current Feature: Low-risk audit fixes
 
 ## Status
 
-Not Started
+In Progress
 
 ## Goals
 
+- `GET /api/health/db` logs database failures on the server and responds with `{ ok: false }` only. The response no longer includes the driver error text or `NEON_BRANCH`.
+- `formatRelativeTime` says "Yesterday" only when the timestamp falls on the previous calendar day. Other times in the 24–48 hour range use the day-count label.
+- Below 1024px, the sidebar button is named from the sheet state ("Open navigation" or "Close navigation") and `aria-expanded` matches whether the sheet is open.
+
 ## Notes
+
+- Taken from the codebase audit. These three are small, local changes with little chance of changing layout or data.
+- The dashboard shell height finding is left out. Locking the shell to the viewport changes which region scrolls.
+- There is no N+1 query to fix. The audit did not report one, and the dashboard loaders do not query inside a loop. Item type counts use one `groupBy`, and collection item types come back through `include` on the parent query.
 
 ## History
 

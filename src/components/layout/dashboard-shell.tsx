@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, type ReactNode } from "react";
+import { useState, useSyncExternalStore, type ReactNode } from "react";
 import { PanelLeft } from "lucide-react";
 
 import { DashboardSidebar } from "@/components/layout/dashboard-sidebar";
@@ -25,6 +25,16 @@ interface DashboardShellProps {
 
 const LG_QUERY = "(min-width: 1024px)";
 
+function subscribeToDesktop(onStoreChange: () => void) {
+  const media = window.matchMedia(LG_QUERY);
+  media.addEventListener("change", onStoreChange);
+  return () => media.removeEventListener("change", onStoreChange);
+}
+
+function isDesktopViewport() {
+  return window.matchMedia(LG_QUERY).matches;
+}
+
 export function DashboardShell({
   children,
   itemTypes,
@@ -32,6 +42,18 @@ export function DashboardShell({
 }: DashboardShellProps) {
   const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const isDesktop = useSyncExternalStore(
+    subscribeToDesktop,
+    isDesktopViewport,
+    () => false
+  );
+  const sidebarLabel = isDesktop
+    ? collapsed
+      ? "Expand sidebar"
+      : "Collapse sidebar"
+    : mobileOpen
+      ? "Close navigation"
+      : "Open navigation";
 
   function handleToggle() {
     if (typeof window !== "undefined" && window.matchMedia(LG_QUERY).matches) {
@@ -51,7 +73,8 @@ export function DashboardShell({
             variant="ghost"
             size="icon-sm"
             onClick={handleToggle}
-            aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+            aria-label={sidebarLabel}
+            aria-expanded={isDesktop ? undefined : mobileOpen}
           >
             <PanelLeft />
           </Button>
