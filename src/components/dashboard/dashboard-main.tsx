@@ -25,7 +25,6 @@ import type {
 } from "@/lib/db/collections";
 import type { DashboardItem, ItemStats } from "@/lib/db/items";
 import { formatRelativeTime } from "@/lib/format-relative-time";
-import { currentUser } from "@/lib/mock-data";
 
 interface StatCard {
   label: string;
@@ -251,15 +250,17 @@ export function DashboardMain({
   pinnedItems,
   recentItems,
   itemStats,
+  userName,
 }: {
   recentCollections: DashboardCollection[];
   collectionStats: CollectionStats;
   pinnedItems: DashboardItem[];
   recentItems: DashboardItem[];
   itemStats: ItemStats;
+  userName: string;
 }) {
   const stats = getStats(collectionStats, itemStats);
-  const firstName = getFirstName(currentUser.name);
+  const firstName = getFirstName(userName);
 
   return (
     <div className="mx-auto flex w-full max-w-6xl flex-col gap-8">

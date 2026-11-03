@@ -1,14 +1,17 @@
 import type { ReactNode } from "react";
 import { Plus, Search } from "lucide-react";
 
+import { UserMenu } from "@/components/auth/user-menu";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import type { SessionUser } from "@/types/session-user";
 
 interface DashboardTopBarProps {
   sidebarToggle?: ReactNode;
+  user: SessionUser;
 }
 
-export function DashboardTopBar({ sidebarToggle }: DashboardTopBarProps) {
+export function DashboardTopBar({ sidebarToggle, user }: DashboardTopBarProps) {
   return (
     <header className="flex h-14 shrink-0 items-center gap-4 border-b border-border px-4">
       <div className="flex items-center gap-2">
@@ -30,10 +33,13 @@ export function DashboardTopBar({ sidebarToggle }: DashboardTopBarProps) {
         />
       </div>
 
-      <Button type="button" tabIndex={-1}>
-        <Plus data-icon="inline-start" />
-        New item
-      </Button>
+      <div className="flex items-center gap-2">
+        <Button type="button" tabIndex={-1}>
+          <Plus data-icon="inline-start" />
+          New item
+        </Button>
+        <UserMenu user={user} />
+      </div>
     </header>
   );
 }

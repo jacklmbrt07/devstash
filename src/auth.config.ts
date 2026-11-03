@@ -13,6 +13,9 @@ export const authConfig = {
       authorize: () => null,
     }),
   ],
+  pages: {
+    signIn: "/sign-in",
+  },
   session: { strategy: "jwt" },
   callbacks: {
     redirect({ url, baseUrl }) {

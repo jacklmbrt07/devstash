@@ -1,8 +1,10 @@
 import { Suspense, type ReactNode } from "react";
 
+import { auth } from "@/auth";
 import { DashboardShell } from "@/components/layout/dashboard-shell";
 import { getSidebarCollections } from "@/lib/db/collections";
 import { getSidebarItemTypes } from "@/lib/db/items";
+import { toSessionUser } from "@/types/session-user";
 
 function DashboardFallback() {
   return (
@@ -15,13 +17,18 @@ async function DashboardFrame({
 }: {
   children: ReactNode;
 }) {
-  const [itemTypes, collections] = await Promise.all([
+  const [session, itemTypes, collections] = await Promise.all([
+    auth(),
     getSidebarItemTypes(),
     getSidebarCollections(),
   ]);
 
   return (
-    <DashboardShell itemTypes={itemTypes} collections={collections}>
+    <DashboardShell
+      itemTypes={itemTypes}
+      collections={collections}
+      user={toSessionUser(session?.user)}
+    >
       {children}
     </DashboardShell>
   );

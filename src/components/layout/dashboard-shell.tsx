@@ -16,11 +16,13 @@ import {
 import type { SidebarCollections } from "@/lib/db/collections";
 import type { SidebarItemType } from "@/lib/db/items";
 import { cn } from "@/lib/utils";
+import type { SessionUser } from "@/types/session-user";
 
 interface DashboardShellProps {
   children: ReactNode;
   itemTypes: SidebarItemType[];
   collections: SidebarCollections;
+  user: SessionUser;
 }
 
 const LG_QUERY = "(min-width: 1024px)";
@@ -39,6 +41,7 @@ export function DashboardShell({
   children,
   itemTypes,
   collections,
+  user,
 }: DashboardShellProps) {
   const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -79,6 +82,7 @@ export function DashboardShell({
             <PanelLeft />
           </Button>
         }
+        user={user}
       />
 
       <div className="flex min-h-0 flex-1">
@@ -92,6 +96,7 @@ export function DashboardShell({
             collapsed={collapsed}
             itemTypes={itemTypes}
             collections={collections}
+            user={user}
           />
         </aside>
 
@@ -110,6 +115,7 @@ export function DashboardShell({
             <DashboardSidebar
               itemTypes={itemTypes}
               collections={collections}
+              user={user}
               onNavigate={() => setMobileOpen(false)}
             />
           </SheetContent>

@@ -1,5 +1,6 @@
 import { Suspense } from "react";
 
+import { auth } from "@/auth";
 import { DashboardMain } from "@/components/dashboard/dashboard-main";
 import {
   getCollectionStats,
@@ -9,12 +10,14 @@ import { getItemStats, getPinnedItems, getRecentItems } from "@/lib/db/items";
 
 async function DashboardContent() {
   const [
+    session,
     recentCollections,
     collectionStats,
     pinnedItems,
     recentItems,
     itemStats,
   ] = await Promise.all([
+    auth(),
     getRecentCollections(),
     getCollectionStats(),
     getPinnedItems(),
@@ -29,6 +32,7 @@ async function DashboardContent() {
       pinnedItems={pinnedItems}
       recentItems={recentItems}
       itemStats={itemStats}
+      userName={session?.user?.name?.trim() || "there"}
     />
   );
 }

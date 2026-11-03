@@ -5,7 +5,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Star } from "lucide-react";
 
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { SidebarUser } from "@/components/auth/sidebar-user";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
@@ -21,23 +21,15 @@ import type {
   SidebarRecentCollection,
 } from "@/lib/db/collections";
 import type { SidebarItemType } from "@/lib/db/items";
-import { currentUser } from "@/lib/mock-data";
 import { cn } from "@/lib/utils";
+import type { SessionUser } from "@/types/session-user";
 
 interface DashboardSidebarProps {
   collapsed?: boolean;
   onNavigate?: () => void;
   itemTypes: SidebarItemType[];
   collections: SidebarCollections;
-}
-
-function getInitials(name: string): string {
-  return name
-    .split(" ")
-    .map((part) => part[0])
-    .join("")
-    .slice(0, 2)
-    .toUpperCase();
+  user: SessionUser;
 }
 
 function NavSectionLabel({ children }: { children: ReactNode }) {
@@ -161,6 +153,7 @@ export function DashboardSidebar({
   onNavigate,
   itemTypes,
   collections,
+  user,
 }: DashboardSidebarProps) {
   const pathname = usePathname();
   const viewAllActive = pathname === "/collections";
@@ -233,24 +226,11 @@ export function DashboardSidebar({
           collapsed && "flex justify-center px-2"
         )}
       >
-        <div
-          className={cn(
-            "flex items-center gap-3 rounded-md p-1.5",
-            collapsed && "justify-center p-0"
-          )}
-        >
-          <Avatar size="sm">
-            <AvatarFallback>{getInitials(currentUser.name)}</AvatarFallback>
-          </Avatar>
-          {!collapsed && (
-            <div className="min-w-0 flex-1">
-              <p className="truncate text-sm font-medium">{currentUser.name}</p>
-              <p className="truncate text-xs text-muted-foreground">
-                {currentUser.email}
-              </p>
-            </div>
-          )}
-        </div>
+        <SidebarUser
+          user={user}
+          collapsed={collapsed}
+          onNavigate={onNavigate}
+        />
       </div>
     </div>
   );
