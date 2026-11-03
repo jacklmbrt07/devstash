@@ -1,7 +1,8 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useEffect } from "react";
 import Link from "next/link";
+import { toast } from "sonner";
 
 import { signInWithCredentials, signInWithGitHub } from "@/actions/auth";
 import { AuthField } from "@/components/auth/auth-field";
@@ -24,13 +25,13 @@ export function SignInForm({
   );
   const error = state?.error ?? initialError;
 
+  useEffect(() => {
+    if (!registered) return;
+    toast.success("You can now log in", { id: "registration-success" });
+  }, [registered]);
+
   return (
     <div className="flex flex-col gap-4">
-      {registered ? (
-        <p className="text-sm text-muted-foreground" role="status">
-          Account created. Sign in to continue.
-        </p>
-      ) : null}
       {error ? (
         <p className="text-sm text-destructive" role="alert">
           {error}

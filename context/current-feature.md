@@ -1,12 +1,20 @@
-# Current Feature
+# Current Feature: Toast
 
 ## Status
 
-Not Started
+In Progress
 
 ## Goals
 
+- After registration, a toast tells the user they can now log in
+- Use Sonner through the ShadCN toast component
+- Only one toast appears when the user has just registered
+- The toast is a simple text message, with no image
+
 ## Notes
+
+- Spec: `context/features/toast.md`
+- Registration already redirects to `/sign-in?registered=1`; the toast should fire on that success path
 
 ## History
 
