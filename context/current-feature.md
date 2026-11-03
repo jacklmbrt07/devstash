@@ -1,20 +1,12 @@
-# Current Feature: Toast
+# Current Feature
 
 ## Status
 
-In Progress
+Not Started
 
 ## Goals
 
-- After registration, a toast tells the user they can now log in
-- Use Sonner through the ShadCN toast component
-- Only one toast appears when the user has just registered
-- The toast is a simple text message, with no image
-
 ## Notes
-
-- Spec: `context/features/toast.md`
-- Registration already redirects to `/sign-in?registered=1`; the toast should fire on that success path
 
 ## History
 
@@ -137,3 +129,10 @@ In Progress
 - `UserAvatar` uses the GitHub image when present, otherwise initials from the name
 - Top bar avatar opens a Sign out menu, and sign out returns to `/sign-in`
 - Unauthenticated visits to `/dashboard` and `/profile` redirect to `/sign-in`
+
+### Toast
+
+- After registration, one Sonner toast says "You can now log in"
+- The ShadCN toaster is mounted in the root layout and uses the app's dark theme
+- The sign-in page shows that toast when `registered=1`, using a stable id so it appears once
+- The message is text only, with no image
