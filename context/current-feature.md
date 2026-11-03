@@ -1,27 +1,12 @@
-# Current Feature: Auth Credentials - Email/Password Provider
+# Current Feature
 
 ## Status
 
-In Progress
+Not Started
 
 ## Goals
 
-- Use bcryptjs for hashing (already installed)
-- Add a password field to the User model via migration if it is not already there
-- Update `auth.config.ts` with a Credentials provider placeholder (`authorize: () => null`)
-- Update `auth.ts` to override Credentials with bcrypt validation
-- Create `POST /api/auth/register` that accepts name, email, password, and confirmPassword
-- Validate that the passwords match, reject an existing user, hash the password, create the user, and return a success or error response
-- Email/password sign-in at `/api/auth/signin` redirects to `/dashboard`
-- GitHub OAuth still works
-
 ## Notes
-
-- Spec: `context/features/auth-spec-files/auth-phase-2-spec.md`
-- Split pattern: `auth.config.ts` holds the Credentials provider with `authorize: () => null`; `auth.ts` overrides it with the bcrypt validation logic
-- Registration route: `POST /api/auth/register`
-- Test registration with curl against `http://localhost:3000/api/auth/register`, then sign in at `/api/auth/signin` and confirm the redirect to `/dashboard`
-- Credentials provider docs: https://authjs.dev/getting-started/authentication/credentials
 
 ## History
 
@@ -124,3 +109,14 @@ In Progress
 - `src/proxy.ts` redirects unauthenticated `/dashboard` visits to NextAuth's default sign-in page
 - Session type includes `user.id`
 - Prisma 8 bridge in `src/lib/auth-prisma.ts` so the adapter can use `db.orm`
+
+### Auth Credentials - Email/Password Provider
+
+- Registration hashes passwords with bcryptjs at 12 rounds, and sign-in checks them with `compare`
+- `users.password` was already on the User model, so no migration was added
+- `auth.config.ts` holds a Credentials provider with `authorize: () => null` for the edge proxy
+- `auth.ts` overrides Credentials with bcrypt validation
+- `POST /api/auth/register` accepts name, email, password, and confirmPassword
+- Passwords must match, an existing email is rejected, and the response is success or error
+- Email/password sign-in at `/api/auth/signin` redirects to `/dashboard`
+- GitHub OAuth still works
