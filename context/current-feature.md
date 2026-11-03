@@ -1,26 +1,12 @@
-# Current Feature: Auth UI - Sign In, Register & Sign Out
+# Current Feature
 
 ## Status
 
-In Progress
+Not Started
 
 ## Goals
 
-- Replace the default NextAuth pages with a custom `/sign-in` page: email and password fields, a "Sign in with GitHub" button, a link to register, and form validation with errors shown
-- Add a `/register` page with name, email, password, and confirm password fields
-- Validate that the passwords match and the email format is valid, submit to `POST /api/auth/register`, and redirect to sign-in on success
-- Show the signed-in user at the bottom of the sidebar: avatar, name, and a dropdown with "Sign out"
-- Avatar uses the GitHub `image` when present, otherwise initials from the name (for example "Brad Traversy" → "BT")
-- Put that avatar behavior in a reusable component
-- Clicking the user icon goes to `/profile`
-- Sign out logs the user out and redirects
-
 ## Notes
-
-- Spec: `context/features/auth-spec-files/auth-phase-3-spec.md`
-- Overview places the user icon, email, and username at the bottom of the sidebar. The testing steps also say to verify the avatar in the top bar.
-- Avatar click opens a dropdown with "Sign out", and the spec also says clicking the icon goes to `/profile`
-- Test `/sign-in` rendering, GitHub sign-in, email/password sign-in, the avatar dropdown, sign out, and registration redirecting to sign-in
 
 ## History
 
@@ -134,3 +120,12 @@ In Progress
 - Passwords must match, an existing email is rejected, and the response is success or error
 - Email/password sign-in at `/api/auth/signin` redirects to `/dashboard`
 - GitHub OAuth still works
+
+### Auth UI - Sign In, Register & Sign Out
+
+- Custom `/sign-in` page with email, password, a GitHub button, a link to register, and visible validation errors
+- `/register` checks that passwords match and the email is valid, posts to `POST /api/auth/register`, and redirects to sign-in
+- Sidebar shows the signed-in avatar, name, and email; the avatar goes to `/profile`, and the name opens a menu with Sign out
+- `UserAvatar` uses the GitHub image when present, otherwise initials from the name
+- Top bar avatar opens a Sign out menu, and sign out returns to `/sign-in`
+- Unauthenticated visits to `/dashboard` and `/profile` redirect to `/sign-in`
