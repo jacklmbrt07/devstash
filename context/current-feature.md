@@ -2,7 +2,7 @@
 
 ## Status
 
-Completed
+Not Started
 
 ## Goals
 
@@ -88,3 +88,10 @@ Completed
 - Dark mode by default
 - Top bar with search and new item button (display only)
 - Placeholder for sidebar and main area (`h2` with "Sidebar" and "Main" for now)
+
+### Add Pro badge to sidebar
+
+- Files and Images in the sidebar show a ShadCN Badge labeled `PRO`
+- The badge stays small, with a light amber outline so it reads as a marker
+- Other sidebar types are unchanged
+- The collapsed sidebar hides the badge along with the type label
