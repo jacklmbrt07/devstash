@@ -6,6 +6,7 @@ import { usePathname } from "next/navigation";
 import { Star } from "lucide-react";
 
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import {
@@ -92,9 +93,12 @@ function SidebarLink({
         <>
           <span className="min-w-0 flex-1 truncate">{label}</span>
           {badge ? (
-            <span className="rounded bg-muted px-1.5 py-0.5 text-[10px] font-medium tracking-wide text-muted-foreground uppercase">
+            <Badge
+              variant="outline"
+              className="h-4 rounded-sm border-amber-400/25 bg-amber-400/10 px-1 text-[10px] font-semibold tracking-wide text-amber-400"
+            >
               {badge}
-            </span>
+            </Badge>
           ) : null}
           {typeof count === "number" ? (
             <span className="tabular-nums text-muted-foreground">{count}</span>
@@ -177,7 +181,7 @@ export function DashboardSidebar({
                 icon={Icon ? <Icon /> : null}
                 iconColor={type.color}
                 count={type.count}
-                badge={PRO_ITEM_TYPES.has(type.name) ? "Pro" : undefined}
+                badge={PRO_ITEM_TYPES.has(type.name) ? "PRO" : undefined}
                 collapsed={collapsed}
                 onNavigate={onNavigate}
               />
