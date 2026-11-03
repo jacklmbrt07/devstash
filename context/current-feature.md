@@ -1,59 +1,12 @@
-# Current Feature: Auth Setup - NextAuth + GitHub Provider
+# Current Feature
 
 ## Status
 
-In Progress
+Not Started
 
 ## Goals
 
-- Install NextAuth v5 (`next-auth@beta`) and `@auth/prisma-adapter`
-- Set up the split auth config pattern for edge compatibility
-- Add the GitHub OAuth provider
-- Protect `/dashboard/*` routes using the Next.js 16 proxy
-- Redirect unauthenticated users to sign-in
-
 ## Notes
-
-Source: `context/features/auth-spec-files/auth-phase-1-spec.md`
-
-Set up NextAuth v5 with the Prisma adapter and GitHub OAuth. Use NextAuth's default pages for testing.
-
-### Files to create
-
-1. `src/auth.config.ts` — Edge-compatible config (providers only, no adapter)
-2. `src/auth.ts` — Full config with Prisma adapter and JWT strategy
-3. `src/app/api/auth/[...nextauth]/route.ts` — Export handlers from `auth.ts`
-4. `src/proxy.ts` — Route protection with redirect logic
-5. `src/types/next-auth.d.ts` — Extend Session type with `user.id`
-
-### Key gotchas
-
-Use Context7 to verify the newest config and conventions.
-
-- Use `next-auth@beta` (not `@latest`, which installs v4)
-- Proxy file must be at `src/proxy.ts` (same level as `app/`)
-- Use named export: `export const proxy = auth(...)`, not a default export
-- Use `session: { strategy: 'jwt' }` with the split config pattern
-- Don't set a custom `pages.signIn` — use NextAuth's default page
-
-### Environment variables
-
-```
-AUTH_SECRET=
-AUTH_GITHUB_ID=
-AUTH_GITHUB_SECRET=
-```
-
-### Testing
-
-1. Go to `/dashboard` — should redirect to sign-in
-2. Click "Sign in with GitHub"
-3. Verify redirect back to `/dashboard` after auth
-
-### References
-
-- Edge compatibility: https://authjs.dev/getting-started/installation#edge-compatibility
-- Prisma adapter: https://authjs.dev/getting-started/adapters/prisma
 
 ## History
 
@@ -148,3 +101,11 @@ AUTH_GITHUB_SECRET=
 - `GET /api/health/db` logs database failures on the server and responds with `{ ok: false }` only, with no driver error text or `NEON_BRANCH`
 - `formatRelativeTime` says "Yesterday" only for the previous calendar day; other times in the 24–48 hour range use the day-count label
 - Below 1024px, the sidebar button is named "Open navigation" or "Close navigation", and `aria-expanded` matches the sheet
+
+### Auth Setup - NextAuth + GitHub Provider
+
+- NextAuth v5 (`next-auth@beta`) with `@auth/prisma-adapter` and the GitHub provider
+- Split config: providers and JWT session in `src/auth.config.ts`, Prisma adapter in `src/auth.ts`
+- `src/proxy.ts` redirects unauthenticated `/dashboard` visits to NextAuth's default sign-in page
+- Session type includes `user.id`
+- Prisma 8 bridge in `src/lib/auth-prisma.ts` so the adapter can use `db.orm`
