@@ -1,6 +1,11 @@
 import { hash } from "bcryptjs";
 import { NextResponse } from "next/server";
 
+import {
+  createEmailVerificationToken,
+  deleteUserAndVerificationToken,
+} from "@/lib/auth/email-verification";
+import { sendVerificationEmail } from "@/lib/email/resend";
 import { db } from "@/prisma/db";
 
 const BCRYPT_ROUNDS = 12;
@@ -80,6 +85,28 @@ export async function POST(request: Request) {
       email: input.email,
       password: passwordHash,
     });
+
+    const { token } = await createEmailVerificationToken(input.email);
+    const verifyUrl = new URL("/verify-email", request.url);
+    verifyUrl.searchParams.set("token", token);
+
+    const emailed = await sendVerificationEmail({
+      to: input.email,
+      name: input.name,
+      verifyUrl: verifyUrl.toString(),
+    });
+
+    if (!emailed.ok) {
+      await deleteUserAndVerificationToken({
+        userId: user.id,
+        email: input.email,
+        token,
+      });
+      return errorResponse(
+        "Could not send the verification email. Try again in a moment.",
+        502,
+      );
+    }
 
     const data: RegisteredUser = {
       id: user.id,

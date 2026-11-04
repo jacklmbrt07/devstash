@@ -27,7 +27,9 @@ export function SignInForm({
 
   useEffect(() => {
     if (!registered) return;
-    toast.success("You can now log in", { id: "registration-success" });
+    toast.success("Check your email to verify your account", {
+      id: "registration-success",
+    });
   }, [registered]);
 
   return (

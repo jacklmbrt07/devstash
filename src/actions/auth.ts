@@ -1,8 +1,9 @@
 "use server";
 
-import { AuthError } from "next-auth";
+import { AuthError, CredentialsSignin } from "next-auth";
 
 import { signIn, signOut } from "@/auth";
+import { EMAIL_NOT_VERIFIED_MESSAGE } from "@/lib/auth/errors";
 
 export interface AuthActionState {
   success: false;
@@ -18,6 +19,13 @@ function redirectTarget(value: FormDataEntryValue | null): string {
 
 function textValue(value: FormDataEntryValue | null): string {
   return typeof value === "string" ? value.trim() : "";
+}
+
+function credentialsErrorMessage(error: CredentialsSignin): string {
+  if (error.code === "email_not_verified") {
+    return EMAIL_NOT_VERIFIED_MESSAGE;
+  }
+  return "Invalid email or password";
 }
 
 export async function signInWithCredentials(
@@ -42,7 +50,14 @@ export async function signInWithCredentials(
       redirectTo: redirectTarget(formData.get("redirectTo")),
     });
   } catch (error) {
+    if (error instanceof CredentialsSignin) {
+      return { success: false, error: credentialsErrorMessage(error) };
+    }
     if (error instanceof AuthError) {
+      const cause = error.cause;
+      if (cause instanceof CredentialsSignin) {
+        return { success: false, error: credentialsErrorMessage(cause) };
+      }
       return { success: false, error: "Invalid email or password" };
     }
     throw error;

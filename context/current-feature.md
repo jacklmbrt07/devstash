@@ -1,14 +1,29 @@
-# Current Feature
+# Current Feature: Email verification on register (Resend)
 
 ## Status
 
-Not Started
+In Progress
 
 ## Goals
 
+- After email/password registration, create a verification token and email a clickable link via Resend (`RESEND_API_KEY`)
+- Visiting the link marks `User.emailVerified` and consumes the token (use existing `VerificationToken` model where possible)
+- Unverified credential users cannot sign in until they verify; show a clear message when they try
+- Register success UX tells the user to check their email (replace or update the current "You can now log in" toast)
+- Support a sensible verify page/route with success and failure states (expired/invalid/already used)
+- Keep GitHub OAuth unaffected (provider-verified accounts do not need the Resend flow)
+
 ## Notes
 
+- Provider: Resend; API key already in `.env` / `.env.production` as `RESEND_API_KEY`
+- Existing pieces: `POST /api/auth/register`, Credentials sign-in in `src/auth.ts`, `User.emailVerified`, `VerificationToken` + adapter helpers in `src/lib/auth-prisma.ts`
+- Current register redirects to `/sign-in?registered=1` with toast "You can now log in" — change to a verify-your-email message/flow
+- Sender: `EMAIL_FROM` env (optional). Falls back to `DevStash <onboarding@resend.dev>` for Resend test sending; use a verified domain in production
+- Prefer Auth.js/NextAuth patterns for email verification tokens where they fit; no schema change unless the existing token table is insufficient
+- Branch: `feature/email-verification-resend`
+
 ## History
+
 
 ### Stats and sidebar
 

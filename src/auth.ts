@@ -5,6 +5,7 @@ import NextAuth from "next-auth";
 import Credentials from "next-auth/providers/credentials";
 
 import { authConfig } from "@/auth.config";
+import { EmailNotVerifiedError } from "@/lib/auth/errors";
 import { authPrisma } from "@/lib/auth-prisma";
 import { db } from "@/prisma/db";
 
@@ -37,6 +38,10 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
 
         const valid = await compare(password, user.password);
         if (!valid) return null;
+
+        if (!user.emailVerified) {
+          throw new EmailNotVerifiedError();
+        }
 
         return {
           id: user.id,

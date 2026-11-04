@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 import { auth } from "@/auth";
 import { AuthCard } from "@/components/auth/auth-card";
 import { SignInForm } from "@/components/auth/sign-in-form";
+import { EMAIL_NOT_VERIFIED_MESSAGE } from "@/lib/auth/errors";
 
 function callbackPath(raw: string | undefined, host: string | null): string {
   if (!raw) return "/dashboard";
@@ -23,6 +24,7 @@ async function SignInContent({
 }: {
   searchParams: Promise<{
     callbackUrl?: string;
+    code?: string;
     error?: string;
     registered?: string;
   }>;
@@ -32,6 +34,12 @@ async function SignInContent({
 
   const params = await searchParams;
   const host = (await headers()).get("host");
+  const initialError =
+    params.error === "CredentialsSignin"
+      ? params.code === "email_not_verified"
+        ? EMAIL_NOT_VERIFIED_MESSAGE
+        : "Invalid email or password"
+      : undefined;
 
   return (
     <AuthCard
@@ -41,11 +49,7 @@ async function SignInContent({
       <SignInForm
         redirectTo={callbackPath(params.callbackUrl, host)}
         registered={params.registered === "1"}
-        initialError={
-          params.error === "CredentialsSignin"
-            ? "Invalid email or password"
-            : undefined
-        }
+        initialError={initialError}
       />
     </AuthCard>
   );
@@ -56,6 +60,7 @@ export default function SignInPage({
 }: {
   searchParams: Promise<{
     callbackUrl?: string;
+    code?: string;
     error?: string;
     registered?: string;
   }>;
