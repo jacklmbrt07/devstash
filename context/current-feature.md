@@ -1,26 +1,12 @@
-# Current Feature: Email verification on register (Resend)
+# Current Feature
 
 ## Status
 
-In Progress
+Not Started
 
 ## Goals
 
-- After email/password registration, create a verification token and email a clickable link via Resend (`RESEND_API_KEY`)
-- Visiting the link marks `User.emailVerified` and consumes the token (use existing `VerificationToken` model where possible)
-- Unverified credential users cannot sign in until they verify; show a clear message when they try
-- Register success UX tells the user to check their email (replace or update the current "You can now log in" toast)
-- Support a sensible verify page/route with success and failure states (expired/invalid/already used)
-- Keep GitHub OAuth unaffected (provider-verified accounts do not need the Resend flow)
-
 ## Notes
-
-- Provider: Resend; API key already in `.env` / `.env.production` as `RESEND_API_KEY`
-- Existing pieces: `POST /api/auth/register`, Credentials sign-in in `src/auth.ts`, `User.emailVerified`, `VerificationToken` + adapter helpers in `src/lib/auth-prisma.ts`
-- Current register redirects to `/sign-in?registered=1` with toast "You can now log in" — change to a verify-your-email message/flow
-- Sender: `EMAIL_FROM` env (optional). Falls back to `DevStash <onboarding@resend.dev>` for Resend test sending; use a verified domain in production
-- Prefer Auth.js/NextAuth patterns for email verification tokens where they fit; no schema change unless the existing token table is insufficient
-- Branch: `feature/email-verification-resend`
 
 ## History
 
@@ -151,3 +137,11 @@ In Progress
 - The ShadCN toaster is mounted in the root layout and uses the app's dark theme
 - The sign-in page shows that toast when `registered=1`, using a stable id so it appears once
 - The message is text only, with no image
+
+### Email verification on register (Resend)
+
+- Registration creates a `VerificationToken` and emails a `/verify-email?token=…` link via Resend (`RESEND_API_KEY`, optional `EMAIL_FROM`)
+- Verify page sets `User.emailVerified`, consumes the token, and shows success / already verified / expired / invalid states
+- Credentials sign-in blocks unverified users with a clear message; GitHub OAuth is unchanged
+- Post-register toast asks users to check their email
+- Development-only `npm run db:cleanup-users` deletes all non-demo users and their content (`NEON_BRANCH=development` required)
