@@ -1,36 +1,39 @@
 import { Suspense } from "react";
-import Link from "next/link";
+import type { Metadata } from "next";
+import { redirect } from "next/navigation";
 
 import { auth } from "@/auth";
-import { UserAvatar } from "@/components/auth/user-avatar";
+import { DashboardShell } from "@/components/layout/dashboard-shell";
+import { ProfileView } from "@/components/profile/profile-view";
+import { getSidebarCollections } from "@/lib/db/collections";
+import { getSidebarItemTypes } from "@/lib/db/items";
+import { getProfile } from "@/lib/db/profile";
 import { toSessionUser } from "@/types/session-user";
+
+export const metadata: Metadata = {
+  title: "Profile · DevStash",
+};
 
 async function ProfileContent() {
   const session = await auth();
-  const user = toSessionUser(session?.user);
+  if (!session?.user?.id) redirect("/sign-in");
+
+  const [profile, itemTypes, collections] = await Promise.all([
+    getProfile(session.user.id),
+    getSidebarItemTypes(),
+    getSidebarCollections(),
+  ]);
+
+  if (!profile) redirect("/sign-in");
 
   return (
-    <main className="mx-auto flex w-full max-w-lg flex-1 flex-col gap-6 p-6">
-      <div className="flex items-center gap-4">
-        <UserAvatar user={user} size="lg" />
-        <div className="min-w-0">
-          <h1 className="truncate text-2xl font-semibold tracking-tight">
-            {user.name || "Profile"}
-          </h1>
-          {user.email ? (
-            <p className="truncate text-sm text-muted-foreground">
-              {user.email}
-            </p>
-          ) : null}
-        </div>
-      </div>
-      <Link
-        href="/dashboard"
-        className="text-sm text-foreground underline-offset-4 hover:underline"
-      >
-        Back to dashboard
-      </Link>
-    </main>
+    <DashboardShell
+      itemTypes={itemTypes}
+      collections={collections}
+      user={toSessionUser(session.user)}
+    >
+      <ProfileView profile={profile} />
+    </DashboardShell>
   );
 }
 
