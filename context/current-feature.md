@@ -1,21 +1,12 @@
-# Current Feature: Items List View
+# Current Feature
 
 ## Status
 
-In Progress
+Not Started
 
 ## Goals
 
-- Create a dynamic route at `/items/[type]` (for example `/items/snippets` and `/items/notes`)
-- Fetch and display items filtered by that type
-- Render a responsive grid of ItemCard components, two columns on medium screens and up
-- Color each card's left border by the item type
-- Follow existing codebase patterns
-
 ## Notes
-
-- Dynamic items listing page at `/items/[type]` that displays type-filtered items
-- Spec: `context/features/item-list-view-spec.md`
 
 ## History
 
@@ -188,3 +179,11 @@ In Progress
 - The client IP is the last `x-forwarded-for` address, which is the one Vercel appends
 - Over-limit API responses are 429 with `Retry-After` and a toast on the auth forms
 - Sign-in can resend the verification email when the account is unverified
+
+### Items List View
+
+- `/items/[type]` lists the demo user's items for that type inside the dashboard shell
+- Sidebar links such as `/items/snippets` and `/items/notes` open the page; an unknown slug returns 404
+- Item cards sit in one column by default and two columns from the medium breakpoint up
+- Each card's left border uses the item type color
+- Signed-out visits redirect to `/sign-in`; a type with no items shows an empty state
