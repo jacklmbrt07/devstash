@@ -91,11 +91,14 @@ Example v4 configuration:
 
 ## Testing
 
-- Vitest for unit tests (server actions and utilities only, not components)
+- Vitest for unit tests. Config is `vitest.config.mts`
+- Scope is server actions (`src/actions/**/*.test.ts`) and utilities (`src/lib/**/*.test.ts`) only
+- Do not add component, page, or hook tests. `*.tsx` files are excluded
 - Test files live next to source files: `feature.test.ts`
 - Run tests: `npm run test` (single run) or `npm run test:watch` (watch mode)
-- Use `vi.mock()` for external dependencies (Prisma, Resend, etc.)
+- Use `vi.mock()` for external dependencies (Prisma, Resend, `next/headers`, `next/navigation`, etc.)
 - Use `vi.useFakeTimers()` for time-dependent logic
+- Browser checks stay separate from unit tests and still apply to UI changes
 
 ## Code Quality
 

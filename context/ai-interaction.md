@@ -15,7 +15,7 @@ This is the common workflow that we will use for every single feature/fix:
 1. **Document** - Document the feature in @context/current-feature.md.
 2. **Branch** - Create new branch for feature, fix, etc
 3. **Implement** - Implement the feature/fix that I create in @context/current-feature.md
-4. **Test** - Verify it works in the browser. Run `npm run test` for unit tests and `npm run build` to check for errors
+4. **Test** - Verify UI changes in the browser. Run `npm run test` for Vitest unit tests and `npm run build` to check for errors. Unit tests cover server actions and `src/lib` utilities only. Do not add component tests.
 5. **Iterate** - Iterate and change things if needed
 6. **Commit** - Only after build passes and everything works. Mark the feature completed in @context/current-feature.md and add it to History in the same commit, so each feature is one commit
 7. **Merge** - Open a pull request and rebase-merge it into main

@@ -57,6 +57,7 @@ Execute the requested action: $ARGUMENTS
 3. Check if tests already exist for these functions
 4. For functions without tests that have testable logic, write unit tests:
    - Create unit tests using Vitest
+   - Place them next to the source file as `feature.test.ts` under `src/actions` or `src/lib`. `vitest.config.mts` only collects those files
    - Focus on server actions and utilities (not components)
    - Test happy path and error cases
    - Do not write tests just to write them. Use your best judgement

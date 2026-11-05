@@ -488,6 +488,7 @@ flowchart TB
 | **AI**             | OpenAI GPT-4o Mini          | Cost-effective for AI features         |
 | **Styling**        | Tailwind CSS v4 + shadcn/ui | Modern, accessible components          |
 | **Payments**       | Stripe                      | Subscriptions & billing                |
+| **Testing**        | Vitest                      | Unit tests for actions and utilities |
 
 ### Important Development Notes
 
@@ -515,6 +516,7 @@ flowchart TB
 - [Neon PostgreSQL](https://neon.tech/docs)
 - [Cloudflare R2](https://developers.cloudflare.com/r2)
 - [Stripe Subscriptions](https://stripe.com/docs/billing/subscriptions)
+- [Vitest](https://vitest.dev/guide/)
 
 ---
 
