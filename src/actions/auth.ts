@@ -1,9 +1,12 @@
 "use server";
 
+import { headers } from "next/headers";
 import { AuthError, CredentialsSignin } from "next-auth";
 
 import { signIn, signOut } from "@/auth";
 import { EMAIL_NOT_VERIFIED_MESSAGE } from "@/lib/auth/errors";
+import { checkRateLimit, clientIp, rateLimitKey } from "@/lib/rate-limit";
+import { rateLimitMessage } from "@/lib/rate-limit-message";
 
 export interface AuthActionState {
   success: false;
@@ -41,6 +44,14 @@ export async function signInWithCredentials(
 
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
     return { success: false, error: "Enter a valid email address" };
+  }
+
+  const limit = await checkRateLimit(
+    "login",
+    rateLimitKey(clientIp(await headers()), email),
+  );
+  if (!limit.success) {
+    return { success: false, error: rateLimitMessage(limit.reset) };
   }
 
   try {

@@ -5,6 +5,7 @@ import Link from "next/link";
 
 import { resetPassword } from "@/actions/password-reset";
 import { AuthField } from "@/components/auth/auth-field";
+import { useRateLimitToast } from "@/components/auth/use-rate-limit-toast";
 import { Button } from "@/components/ui/button";
 
 interface ResetPasswordFormProps {
@@ -13,6 +14,7 @@ interface ResetPasswordFormProps {
 
 export function ResetPasswordForm({ token }: ResetPasswordFormProps) {
   const [state, formAction, pending] = useActionState(resetPassword, null);
+  useRateLimitToast(state?.error);
 
   return (
     <div className="flex flex-col gap-4">

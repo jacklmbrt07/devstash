@@ -1,13 +1,15 @@
 import { randomBytes } from "node:crypto";
 
-import { db } from "@/prisma/db";
-
+import { isEmailVerificationEnabled } from "@/lib/auth/email-verification-config";
 import {
   deleteVerificationToken,
+  deleteVerificationTokensForIdentifier,
   isPasswordResetIdentifier,
   parseTimestamp,
   toTimestamp,
 } from "@/lib/auth/verification-token";
+import { sendVerificationEmail } from "@/lib/email/resend";
+import { db } from "@/prisma/db";
 
 const TOKEN_TTL_MS = 24 * 60 * 60 * 1000;
 
@@ -73,6 +75,33 @@ export async function verifyEmailToken(
   await deleteVerificationToken(record.identifier, record.token);
 
   return { status: "success" };
+}
+
+export async function resendEmailVerification(options: {
+  email: string;
+  origin: string;
+}): Promise<void> {
+  if (!isEmailVerificationEnabled()) return;
+
+  const user = await db.orm.public.User.where({
+    email: options.email,
+  }).first();
+  if (!user || user.emailVerified) return;
+
+  await deleteVerificationTokensForIdentifier(options.email);
+  const { token } = await createEmailVerificationToken(options.email);
+  const verifyUrl = new URL("/verify-email", options.origin);
+  verifyUrl.searchParams.set("token", token);
+
+  const emailed = await sendVerificationEmail({
+    to: options.email,
+    name: user.name?.trim() || "there",
+    verifyUrl: verifyUrl.toString(),
+  });
+  if (emailed.ok) return;
+
+  console.error("Resend verification email failed:", emailed.error);
+  await deleteVerificationToken(options.email, token);
 }
 
 export async function deleteUserAndVerificationToken(options: {

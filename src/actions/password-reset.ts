@@ -3,7 +3,13 @@
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 
-import { requestPasswordResetEmail, resetPasswordWithToken } from "@/lib/auth/password-reset";
+import {
+  requestPasswordResetEmail,
+  resetPasswordError,
+  resetPasswordWithToken,
+} from "@/lib/auth/password-reset";
+import { checkRateLimit, clientIp } from "@/lib/rate-limit";
+import { rateLimitMessage } from "@/lib/rate-limit-message";
 
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -34,6 +40,14 @@ export async function requestPasswordReset(
   const email = textValue(formData.get("email")).toLowerCase();
   if (!EMAIL_PATTERN.test(email)) {
     return { status: "error", error: "Enter a valid email address" };
+  }
+
+  const limit = await checkRateLimit(
+    "forgotPassword",
+    clientIp(await headers()),
+  );
+  if (!limit.success) {
+    return { status: "error", error: rateLimitMessage(limit.reset) };
   }
 
   try {
@@ -71,14 +85,17 @@ export async function resetPassword(
     return { error: "Passwords do not match" };
   }
 
+  const limit = await checkRateLimit(
+    "resetPassword",
+    clientIp(await headers()),
+  );
+  if (!limit.success) {
+    return { error: rateLimitMessage(limit.reset) };
+  }
+
   const result = await resetPasswordWithToken(token, password);
   if (!result.ok) {
-    return {
-      error:
-        result.status === "expired"
-          ? "This reset link has expired. Request a new one."
-          : "This reset link is invalid or has already been used.",
-    };
+    return { error: resetPasswordError(result.status) };
   }
 
   redirect("/sign-in?reset=1");

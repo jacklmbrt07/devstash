@@ -97,6 +97,12 @@ export async function readPasswordResetToken(
   return "valid";
 }
 
+export function resetPasswordError(status: "expired" | "invalid"): string {
+  return status === "expired"
+    ? "This reset link has expired. Request a new one."
+    : "This reset link is invalid or has already been used.";
+}
+
 export async function resetPasswordWithToken(
   token: string,
   password: string,

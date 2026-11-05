@@ -5,6 +5,7 @@ import Link from "next/link";
 
 import { requestPasswordReset } from "@/actions/password-reset";
 import { AuthField } from "@/components/auth/auth-field";
+import { useRateLimitToast } from "@/components/auth/use-rate-limit-toast";
 import { Button } from "@/components/ui/button";
 
 const CONFIRMATION =
@@ -15,6 +16,7 @@ export function ForgotPasswordForm() {
     requestPasswordReset,
     null,
   );
+  useRateLimitToast(state?.error);
 
   if (state?.status === "sent") {
     return (

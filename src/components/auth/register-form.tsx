@@ -3,9 +3,11 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 
 import { AuthField } from "@/components/auth/auth-field";
 import { Button } from "@/components/ui/button";
+import { isRateLimitError } from "@/lib/rate-limit-message";
 
 interface RegisterResponse {
   success?: boolean;
@@ -54,6 +56,13 @@ export function RegisterForm() {
         body: JSON.stringify({ name, email, password, confirmPassword }),
       });
       const body = (await response.json()) as RegisterResponse;
+      if (response.status === 429 || isRateLimitError(body.error)) {
+        const message =
+          body.error ?? "Too many attempts. Please try again in 60 minutes.";
+        setError(message);
+        toast.error(message, { id: "auth-rate-limit" });
+        return;
+      }
       if (!response.ok || !body.success) {
         setError(body.error ?? "Could not create the account");
         return;

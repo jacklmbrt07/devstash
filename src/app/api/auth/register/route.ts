@@ -8,6 +8,7 @@ import {
   emailVerifiedNow,
 } from "@/lib/auth/email-verification";
 import { sendVerificationEmail } from "@/lib/email/resend";
+import { checkRateLimit, clientIp, rateLimitResponse } from "@/lib/rate-limit";
 import { db } from "@/prisma/db";
 
 const BCRYPT_ROUNDS = 12;
@@ -72,6 +73,9 @@ export async function POST(request: Request) {
 
   const input = validateRegistration(body);
   if (!input.ok) return errorResponse(input.error, 400);
+
+  const limit = await checkRateLimit("register", clientIp(request.headers));
+  if (!limit.success) return rateLimitResponse(limit);
 
   try {
     const existing = await db.orm.public.User.where({
