@@ -117,6 +117,32 @@ export async function getRecentItems(): Promise<DashboardItem[]> {
   return rows.map(toDashboardItem);
 }
 
+export async function getItemsByType(typeName: string): Promise<DashboardItem[]> {
+  const userId = await getDemoUserId();
+  if (!userId) return [];
+
+  const itemType = await db.orm.public.ItemType.where({
+    name: typeName,
+    isSystem: true,
+  })
+    .select("id")
+    .first();
+  if (!itemType) return [];
+
+  const rows = await db.orm.public.Item.where({
+    userId,
+    itemTypeId: itemType.id,
+  })
+    .orderBy((item) => item.updatedAt.desc())
+    .include("itemType", (type) => type.select("name", "color"))
+    .include("itemTags", (links) =>
+      links.include("tag", (tag) => tag.select("name"))
+    )
+    .all();
+
+  return rows.map(toDashboardItem);
+}
+
 export async function getSidebarItemTypes(): Promise<SidebarItemType[]> {
   const userId = await getDemoUserId();
 

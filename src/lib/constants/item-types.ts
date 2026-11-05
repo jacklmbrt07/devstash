@@ -35,6 +35,13 @@ export function getItemTypeHref(name: string): string {
   return `/items/${name}s`;
 }
 
+export function getItemTypeNameFromSlug(slug: string): string | null {
+  for (const name of Object.keys(ITEM_TYPE_ICONS)) {
+    if (getItemTypeHref(name) === `/items/${slug}`) return name;
+  }
+  return null;
+}
+
 export function getItemTypeLabel(name: string): string {
   const plural = `${name}s`;
   return plural.charAt(0).toUpperCase() + plural.slice(1);
