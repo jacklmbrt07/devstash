@@ -2,6 +2,13 @@ import { randomBytes } from "node:crypto";
 
 import { db } from "@/prisma/db";
 
+import {
+  deleteVerificationToken,
+  isPasswordResetIdentifier,
+  parseTimestamp,
+  toTimestamp,
+} from "@/lib/auth/verification-token";
+
 const TOKEN_TTL_MS = 24 * 60 * 60 * 1000;
 
 export function emailVerifiedNow(): string {
@@ -13,27 +20,6 @@ export type VerifyEmailResult =
   | { status: "already_verified" }
   | { status: "expired" }
   | { status: "invalid" };
-
-function toTimestamp(date: Date): string {
-  return date.toISOString().replace(/Z$/, "");
-}
-
-async function deleteVerificationToken(identifier: string, token: string) {
-  await db.execute(
-    db.raw
-      .sql`DELETE FROM verification_tokens WHERE identifier = ${identifier} AND token = ${token}`
-      .affectedCount()
-      .build(),
-  );
-}
-
-function parseTimestamp(value: string): Date {
-  const hasZone = value.endsWith("Z") || /[+-]\d{2}:?\d{2}$/.test(value);
-  const normalized = hasZone
-    ? value
-    : `${value.includes("T") ? value : value.replace(" ", "T")}Z`;
-  return new Date(normalized);
-}
 
 export async function createEmailVerificationToken(
   email: string,
@@ -58,7 +44,9 @@ export async function verifyEmailToken(
   const record = await db.orm.public.VerificationToken.where({
     token,
   }).first();
-  if (!record) return { status: "invalid" };
+  if (!record || isPasswordResetIdentifier(record.identifier)) {
+    return { status: "invalid" };
+  }
 
   const expires = parseTimestamp(record.expires);
   if (Number.isNaN(expires.getTime()) || expires.getTime() <= Date.now()) {

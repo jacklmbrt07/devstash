@@ -11,12 +11,14 @@ import { Button } from "@/components/ui/button";
 interface SignInFormProps {
   redirectTo: string;
   registrationMessage?: string;
+  resetMessage?: string;
   initialError?: string;
 }
 
 export function SignInForm({
   redirectTo,
   registrationMessage,
+  resetMessage,
   initialError,
 }: SignInFormProps) {
   const [state, formAction, pending] = useActionState(
@@ -31,6 +33,13 @@ export function SignInForm({
       id: "registration-success",
     });
   }, [registrationMessage]);
+
+  useEffect(() => {
+    if (!resetMessage) return;
+    toast.success(resetMessage, {
+      id: "password-reset-success",
+    });
+  }, [resetMessage]);
 
   return (
     <div className="flex flex-col gap-4">
@@ -58,6 +67,14 @@ export function SignInForm({
           autoComplete="current-password"
           invalid={Boolean(error)}
         />
+        <div className="flex justify-end">
+          <Link
+            href="/forgot-password"
+            className="text-sm text-muted-foreground underline-offset-4 hover:underline"
+          >
+            Forgot password?
+          </Link>
+        </div>
         <Button type="submit" disabled={pending} className="w-full">
           {pending ? "Signing in…" : "Sign in"}
         </Button>

@@ -28,6 +28,7 @@ async function SignInContent({
     code?: string;
     error?: string;
     registered?: string;
+    reset?: string;
   }>;
 }) {
   const session = await auth();
@@ -52,6 +53,11 @@ async function SignInContent({
         registrationMessage={
           params.registered === "1" ? registrationSuccessMessage() : undefined
         }
+        resetMessage={
+          params.reset === "1"
+            ? "Your password was updated. You can sign in now."
+            : undefined
+        }
         initialError={initialError}
       />
     </AuthCard>
@@ -66,6 +72,7 @@ export default function SignInPage({
     code?: string;
     error?: string;
     registered?: string;
+    reset?: string;
   }>;
 }) {
   return (
