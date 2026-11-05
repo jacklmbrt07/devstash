@@ -1,29 +1,12 @@
-# Current Feature: Forgot password
+# Current Feature
 
 ## Status
 
-In Progress
+Not Started
 
 ## Goals
 
-- Sign-in shows a "Forgot password?" link to `/forgot-password`
-- `/forgot-password` accepts an email and always shows the same confirmation, whether or not that account exists
-- When the address belongs to a credentials user, create a `VerificationToken` and email a `/reset-password?token=…` link through the existing Resend setup
-- Reset tokens live on the existing `VerificationToken` model with no schema change; their `identifier` is namespaced so they never collide with email-verification tokens
-- `/reset-password` shows invalid and expired states, accepts a new password and confirmation, hashes it with bcryptjs at 12 rounds, updates `User.password`, and deletes the token
-- A reset link works once; an expired or unknown token cannot change a password
-- GitHub-only accounts (no password) and unknown emails get the same confirmation and no reset email
-
 ## Notes
-
-- Reuse `verification_tokens` as-is. Deletes stay raw SQL because the table has no primary key (`src/lib/auth/email-verification.ts`)
-- Namespace the identifier (for example `reset:<email>`) so `verifyEmailToken` cannot consume a reset token, and a reset cannot mark an email verified. `token` stays globally unique
-- Store the token the same way email verification does (plaintext random bytes). Do not add a new model or migration
-- Reset links expire in 1 hour. Email-verification links stay at 24 hours
-- `EMAIL_VERIFICATION_ENABLED` only controls registration. Password reset still sends through Resend when a credentials account matches
-- Copy the sign-in / register form layout (`AuthField`, existing auth pages). No new visual system
-- After a successful reset, send the user to `/sign-in` with a one-time success toast
-- Do not reveal whether an email is registered, unverified, or GitHub-only
 
 ## History
 
@@ -170,3 +153,12 @@ In Progress
 - The post-register toast follows the flag: "Check your email to verify your account" when on, "You can now log in" when off
 - Local `.env` sets the flag to `false` until a domain is linked to Resend
 - Verification token rows are deleted with SQL because `verification_tokens` has no primary key
+
+### Forgot password
+
+- Sign-in links to `/forgot-password`, which always shows the same confirmation
+- A credentials account gets a `VerificationToken` with identifier `reset:<email>` and a Resend link to `/reset-password?token=…` that expires in 1 hour
+- `/reset-password` rejects invalid, expired, and used links, hashes the new password with bcryptjs at 12 rounds, and deletes the token
+- Unknown emails and accounts with no password get the same confirmation and no email
+- A successful reset returns to `/sign-in` with a one-time success toast
+- Email verification still uses a 24-hour token and ignores reset identifiers
