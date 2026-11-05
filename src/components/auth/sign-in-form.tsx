@@ -10,13 +10,13 @@ import { Button } from "@/components/ui/button";
 
 interface SignInFormProps {
   redirectTo: string;
-  registered: boolean;
+  registrationMessage?: string;
   initialError?: string;
 }
 
 export function SignInForm({
   redirectTo,
-  registered,
+  registrationMessage,
   initialError,
 }: SignInFormProps) {
   const [state, formAction, pending] = useActionState(
@@ -26,11 +26,11 @@ export function SignInForm({
   const error = state?.error ?? initialError;
 
   useEffect(() => {
-    if (!registered) return;
-    toast.success("Check your email to verify your account", {
+    if (!registrationMessage) return;
+    toast.success(registrationMessage, {
       id: "registration-success",
     });
-  }, [registered]);
+  }, [registrationMessage]);
 
   return (
     <div className="flex flex-col gap-4">

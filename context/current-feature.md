@@ -1,12 +1,26 @@
-# Current Feature
+# Current Feature: Toggle email verification
 
 ## Status
 
-Not Started
+In Progress
 
 ## Goals
 
+- An env flag, `EMAIL_VERIFICATION_ENABLED`, turns the email verification system on or off
+- Unset or any value other than `false` keeps today's behavior: registration creates a `VerificationToken`, emails `/verify-email?token=…` via Resend, and rolls the account back if the send fails
+- `EMAIL_VERIFICATION_ENABLED=false` skips the token and the Resend send, so registration succeeds for any valid email without a verified sending domain
+- With the flag off, new accounts are marked `emailVerified` at creation, and credentials sign-in does not block unverified users (including accounts created while verification was on)
+- The post-register toast follows the flag: "Check your email to verify your account" when on, "You can now log in" when off
+- GitHub OAuth and the `/verify-email` page stay as they are; existing links still verify if someone opens them
+- `.env` sets the flag to `false` for local development until a domain is linked to Resend
+
 ## Notes
+
+- Env variable is the right toggle. This is an ops switch for the missing Resend domain, not a per-user setting, so it does not need a database column or an admin UI. Flip it per environment and restart the server.
+- Read the flag in one shared helper so register, credentials `authorize`, and the sign-in toast cannot drift.
+- Only the exact string `false` disables verification. That keeps a typo or empty value on the safe side.
+- Do not remove `RESEND_API_KEY` or `EMAIL_FROM`. They stay in use whenever the flag is on.
+- No schema change. `User.emailVerified` already exists.
 
 ## History
 

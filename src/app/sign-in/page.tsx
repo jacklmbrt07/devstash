@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 import { auth } from "@/auth";
 import { AuthCard } from "@/components/auth/auth-card";
 import { SignInForm } from "@/components/auth/sign-in-form";
+import { registrationSuccessMessage } from "@/lib/auth/email-verification-config";
 import { EMAIL_NOT_VERIFIED_MESSAGE } from "@/lib/auth/errors";
 
 function callbackPath(raw: string | undefined, host: string | null): string {
@@ -48,7 +49,9 @@ async function SignInContent({
     >
       <SignInForm
         redirectTo={callbackPath(params.callbackUrl, host)}
-        registered={params.registered === "1"}
+        registrationMessage={
+          params.registered === "1" ? registrationSuccessMessage() : undefined
+        }
         initialError={initialError}
       />
     </AuthCard>

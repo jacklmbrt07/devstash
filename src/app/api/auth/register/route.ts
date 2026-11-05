@@ -1,9 +1,11 @@
 import { hash } from "bcryptjs";
 import { NextResponse } from "next/server";
 
+import { isEmailVerificationEnabled } from "@/lib/auth/email-verification-config";
 import {
   createEmailVerificationToken,
   deleteUserAndVerificationToken,
+  emailVerifiedNow,
 } from "@/lib/auth/email-verification";
 import { sendVerificationEmail } from "@/lib/email/resend";
 import { db } from "@/prisma/db";
@@ -80,32 +82,36 @@ export async function POST(request: Request) {
     }
 
     const passwordHash = await hash(input.password, BCRYPT_ROUNDS);
+    const verificationEnabled = isEmailVerificationEnabled();
     const user = await db.orm.public.User.create({
       name: input.name,
       email: input.email,
       password: passwordHash,
+      ...(verificationEnabled ? {} : { emailVerified: emailVerifiedNow() }),
     });
 
-    const { token } = await createEmailVerificationToken(input.email);
-    const verifyUrl = new URL("/verify-email", request.url);
-    verifyUrl.searchParams.set("token", token);
+    if (verificationEnabled) {
+      const { token } = await createEmailVerificationToken(input.email);
+      const verifyUrl = new URL("/verify-email", request.url);
+      verifyUrl.searchParams.set("token", token);
 
-    const emailed = await sendVerificationEmail({
-      to: input.email,
-      name: input.name,
-      verifyUrl: verifyUrl.toString(),
-    });
-
-    if (!emailed.ok) {
-      await deleteUserAndVerificationToken({
-        userId: user.id,
-        email: input.email,
-        token,
+      const emailed = await sendVerificationEmail({
+        to: input.email,
+        name: input.name,
+        verifyUrl: verifyUrl.toString(),
       });
-      return errorResponse(
-        "Could not send the verification email. Try again in a moment.",
-        502,
-      );
+
+      if (!emailed.ok) {
+        await deleteUserAndVerificationToken({
+          userId: user.id,
+          email: input.email,
+          token,
+        });
+        return errorResponse(
+          "Could not send the verification email. Try again in a moment.",
+          502,
+        );
+      }
     }
 
     const data: RegisteredUser = {

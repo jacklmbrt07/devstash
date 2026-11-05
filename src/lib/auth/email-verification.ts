@@ -4,6 +4,10 @@ import { db } from "@/prisma/db";
 
 const TOKEN_TTL_MS = 24 * 60 * 60 * 1000;
 
+export function emailVerifiedNow(): string {
+  return toTimestamp(new Date());
+}
+
 export type VerifyEmailResult =
   | { status: "success" }
   | { status: "already_verified" }
@@ -12,6 +16,15 @@ export type VerifyEmailResult =
 
 function toTimestamp(date: Date): string {
   return date.toISOString().replace(/Z$/, "");
+}
+
+async function deleteVerificationToken(identifier: string, token: string) {
+  await db.execute(
+    db.raw
+      .sql`DELETE FROM verification_tokens WHERE identifier = ${identifier} AND token = ${token}`
+      .affectedCount()
+      .build(),
+  );
 }
 
 function parseTimestamp(value: string): Date {
@@ -49,10 +62,7 @@ export async function verifyEmailToken(
 
   const expires = parseTimestamp(record.expires);
   if (Number.isNaN(expires.getTime()) || expires.getTime() <= Date.now()) {
-    await db.orm.public.VerificationToken.where({
-      identifier: record.identifier,
-      token: record.token,
-    }).delete();
+    await deleteVerificationToken(record.identifier, record.token);
     return { status: "expired" };
   }
 
@@ -60,28 +70,19 @@ export async function verifyEmailToken(
     email: record.identifier,
   }).first();
   if (!user) {
-    await db.orm.public.VerificationToken.where({
-      identifier: record.identifier,
-      token: record.token,
-    }).delete();
+    await deleteVerificationToken(record.identifier, record.token);
     return { status: "invalid" };
   }
 
   if (user.emailVerified) {
-    await db.orm.public.VerificationToken.where({
-      identifier: record.identifier,
-      token: record.token,
-    }).delete();
+    await deleteVerificationToken(record.identifier, record.token);
     return { status: "already_verified" };
   }
 
   await db.orm.public.User.where({ id: user.id }).update({
     emailVerified: toTimestamp(new Date()),
   });
-  await db.orm.public.VerificationToken.where({
-    identifier: record.identifier,
-    token: record.token,
-  }).delete();
+  await deleteVerificationToken(record.identifier, record.token);
 
   return { status: "success" };
 }
@@ -91,9 +92,6 @@ export async function deleteUserAndVerificationToken(options: {
   email: string;
   token: string;
 }) {
-  await db.orm.public.VerificationToken.where({
-    identifier: options.email,
-    token: options.token,
-  }).delete();
+  await deleteVerificationToken(options.email, options.token);
   await db.orm.public.User.where({ id: options.userId }).delete();
 }
