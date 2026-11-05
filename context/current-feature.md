@@ -1,21 +1,12 @@
-# Current Feature: Items list three columns
+# Current Feature
 
 ## Status
 
-In Progress
+Not Started
 
 ## Goals
 
-- `/items/[type]` item cards stay in one column on small screens
-- Two columns from the medium breakpoint
-- Three columns from the large breakpoint (`lg`)
-- Spacing, empty state, type border, and the rest of the page stay the same
-
 ## Notes
-
-- Inline request: change the item listing view to three columns on larger viewports and keep it responsive
-- Current grid is `grid gap-3 md:grid-cols-2` in `src/components/items/item-list-view.tsx`
-- Layout only. Data fetching and card content stay the same
 
 ## History
 
@@ -196,3 +187,10 @@ In Progress
 - Item cards sit in one column by default and two columns from the medium breakpoint up
 - Each card's left border uses the item type color
 - Signed-out visits redirect to `/sign-in`; a type with no items shows an empty state
+
+### Items list three columns
+
+- `/items/[type]` item cards stay in one column on small screens
+- Two columns from the medium breakpoint
+- Three columns from the large breakpoint (`lg`)
+- Spacing, empty state, type border, and the rest of the page stay the same
