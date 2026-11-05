@@ -1,26 +1,12 @@
-# Current Feature: Profile Page
+# Current Feature
 
 ## Status
 
-In Progress
+Not Started
 
 ## Goals
 
-- Create profile page at `/profile` route
-- Display user info: email, name, avatar (GitHub or initials), account creation date
-- Show usage stats: total items, total collections, breakdown by item type
-- Add account actions: change password (email users only), delete account with confirmation
-- Follow existing codebase patterns for data fetching and components
-- Top-right user icon links to `/profile`
-- Profile page includes a card labeled Email and Member since
-
 ## Notes
-
-- Avatar logic: Use GitHub avatar from OAuth if available, otherwise generate initials from name/email
-- Change password button should only appear for users who signed up with email/password (not GitHub OAuth)
-- Delete account needs confirmation dialog to prevent accidental deletion
-- Item type breakdown should show counts for each type (snippets, prompts, notes, commands, links, files, images)
-- Route should be protected (require authentication)
 
 ## History
 
@@ -176,3 +162,12 @@ In Progress
 - Unknown emails and accounts with no password get the same confirmation and no email
 - A successful reset returns to `/sign-in` with a one-time success toast
 - Email verification still uses a 24-hour token and ignores reset identifiers
+
+### Profile Page
+
+- `/profile` is protected and rendered in the dashboard shell for the signed-in user
+- The page shows name, GitHub avatar or initials, and a card labeled Email and Member since
+- Usage stats include total items, total collections, and a count for every system item type
+- Email accounts can change their password after confirming the current one; GitHub-only accounts do not see that action
+- Delete account asks for confirmation, removes the user, and signs out
+- The top-right avatar links to `/profile`; sign out stays on the sidebar name
