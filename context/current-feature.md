@@ -1,26 +1,12 @@
-# Current Feature: Item Drawer
+# Current Feature
 
 ## Status
 
-In Progress
+Not Started
 
 ## Goals
 
-- Right-side slide-in drawer (shadcn Sheet) opens when an item card is clicked; this is the item detail view, with no separate item page
-- Works on both the dashboard and the items list pages
-- A client wrapper manages drawer state because the pages are server components
-- Card data stays server-fetched; full item detail (content, collections, language, and the rest) loads on click from `GET /api/items/[id]`
-- The query lives in `lib/db/items.ts`; the API route calls it after an auth check
-- The drawer shows a skeleton while the detail request is in flight
-- Action bar: Favorite (star, yellow when active), Pin, Copy, Edit (pencil), and Delete (trash, right-aligned)
-- This pass shows drawer details only; the code editor and item-specific extras come later
-- Opening an item feels snappy: fetch on click, no page navigation
-
 ## Notes
-
-- Spec: `context/features/item-drawer-spec.md`
-- Visual reference: `context/screenshots/dashboard-ui-drawer.png`
-- Match the action bar layout to that screenshot
 
 ## History
 
@@ -208,3 +194,11 @@ In Progress
 - Two columns from the medium breakpoint
 - Three columns from the large breakpoint (`lg`)
 - Spacing, empty state, type border, and the rest of the page stay the same
+
+### Item Drawer
+
+- A right-side sheet opens from a dashboard row or an items-list card, with no separate item page
+- Full item detail loads on click from `GET /api/items/[id]` after an auth check; the query is `getItemById` in `src/lib/db/items.ts`
+- The drawer shows a skeleton while that request runs, then type, language, title, description, collections, content, file name, and URL
+- The action bar is Favorite (yellow star when already favorited), Pin, Copy, Delete, and Edit
+- Copy writes the content, URL, or title to the clipboard; favorite, pin, edit, and delete stay visual until a later pass
