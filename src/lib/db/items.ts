@@ -1,6 +1,7 @@
 import { connection } from "next/server";
 import { cache } from "react";
 
+import type { CreateItemData } from "@/lib/items/create-item-input";
 import type { UpdateItemData } from "@/lib/items/update-item-input";
 import { db } from "@/prisma/db";
 
@@ -217,6 +218,62 @@ export async function deleteItem(
   }).delete();
   if (!deleted) return null;
   return { id: deleted.id };
+}
+
+function fieldsForNewItem(data: CreateItemData) {
+  switch (data.type) {
+    case "snippet":
+    case "command":
+      return {
+        contentType: "TEXT" as const,
+        content: data.content,
+        language: data.language,
+        url: null,
+      };
+    case "prompt":
+    case "note":
+      return {
+        contentType: "TEXT" as const,
+        content: data.content,
+        language: null,
+        url: null,
+      };
+    case "link":
+      return {
+        contentType: "URL" as const,
+        content: null,
+        language: null,
+        url: data.url,
+      };
+  }
+}
+
+export async function createItem(
+  userId: string,
+  data: CreateItemData,
+): Promise<ItemDetail | null> {
+  const itemType = await db.orm.public.ItemType.where({
+    name: data.type,
+    isSystem: true,
+  })
+    .select("id")
+    .first();
+  if (!itemType) return null;
+
+  const fields = fieldsForNewItem(data);
+  const created = await db.orm.public.Item.create({
+    title: data.title,
+    description: data.description,
+    contentType: fields.contentType,
+    content: fields.content,
+    url: fields.url,
+    language: fields.language,
+    userId,
+    itemTypeId: itemType.id,
+  });
+
+  await replaceItemTags(created.id, data.tags);
+  return findItemDetail(userId, created.id);
 }
 
 export async function updateItem(

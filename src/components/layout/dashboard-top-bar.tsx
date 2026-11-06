@@ -1,8 +1,8 @@
 import type { ReactNode } from "react";
-import { Plus, Search } from "lucide-react";
+import { Search } from "lucide-react";
 
 import { UserMenu } from "@/components/auth/user-menu";
-import { Button } from "@/components/ui/button";
+import { CreateItemDialog } from "@/components/items/create-item-dialog";
 import { Input } from "@/components/ui/input";
 import type { SessionUser } from "@/types/session-user";
 
@@ -34,10 +34,7 @@ export function DashboardTopBar({ sidebarToggle, user }: DashboardTopBarProps) {
       </div>
 
       <div className="flex items-center gap-2">
-        <Button type="button" tabIndex={-1}>
-          <Plus data-icon="inline-start" />
-          New item
-        </Button>
+        <CreateItemDialog />
         <UserMenu user={user} />
       </div>
     </header>

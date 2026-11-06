@@ -1,12 +1,23 @@
-# Current Feature
+# Current Feature: Item Create
 
 ## Status
 
-Not Started
+In Progress
 
 ## Goals
 
+- Open a shadcn Dialog from the "New Item" button in the top bar
+- Type selector covers snippet, prompt, command, note, and link
+- Fields follow the selected type: title (required), description, and tags on every type; content and language on snippet and command; content on prompt and note; URL (required) on link
+- Server action `createItem` validates input with Zod
+- Query function `createItem` lives in `src/lib/db/items.ts`
+- Success shows a toast, closes the modal, and refreshes the list
+
 ## Notes
+
+- Spec: `context/features/item-create-spec.md`
+- Opens from the existing top-bar "New Item" button
+- Types match the system item types already used by the drawer and items list (file and image stay out of this dialog)
 
 ## History
 
