@@ -5,6 +5,7 @@ import { PanelLeft } from "lucide-react";
 
 import { DashboardSidebar } from "@/components/layout/dashboard-sidebar";
 import { DashboardTopBar } from "@/components/layout/dashboard-top-bar";
+import { ItemDrawer } from "@/components/items/item-drawer";
 import { Button } from "@/components/ui/button";
 import {
   Sheet,
@@ -68,61 +69,63 @@ export function DashboardShell({
   }
 
   return (
-    <div className="flex min-h-full flex-col">
-      <DashboardTopBar
-        sidebarToggle={
-          <Button
-            type="button"
-            variant="ghost"
-            size="icon-sm"
-            onClick={handleToggle}
-            aria-label={sidebarLabel}
-            aria-expanded={isDesktop ? undefined : mobileOpen}
-          >
-            <PanelLeft />
-          </Button>
-        }
-        user={user}
-      />
+    <ItemDrawer>
+      <div className="flex min-h-full flex-col">
+        <DashboardTopBar
+          sidebarToggle={
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon-sm"
+              onClick={handleToggle}
+              aria-label={sidebarLabel}
+              aria-expanded={isDesktop ? undefined : mobileOpen}
+            >
+              <PanelLeft />
+            </Button>
+          }
+          user={user}
+        />
 
-      <div className="flex min-h-0 flex-1">
-        <aside
-          className={cn(
-            "hidden shrink-0 overflow-hidden border-r border-sidebar-border transition-[width] duration-200 ease-in-out lg:block",
-            collapsed ? "w-16" : "w-64"
-          )}
-        >
-          <DashboardSidebar
-            collapsed={collapsed}
-            itemTypes={itemTypes}
-            collections={collections}
-            user={user}
-          />
-        </aside>
-
-        <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
-          <SheetContent
-            side="left"
-            showCloseButton={false}
-            className="w-72 max-w-[85vw] gap-0 p-0"
+        <div className="flex min-h-0 flex-1">
+          <aside
+            className={cn(
+              "hidden shrink-0 overflow-hidden border-r border-sidebar-border transition-[width] duration-200 ease-in-out lg:block",
+              collapsed ? "w-16" : "w-64"
+            )}
           >
-            <SheetHeader className="sr-only">
-              <SheetTitle>Navigation</SheetTitle>
-              <SheetDescription>
-                Browse item types and collections
-              </SheetDescription>
-            </SheetHeader>
             <DashboardSidebar
+              collapsed={collapsed}
               itemTypes={itemTypes}
               collections={collections}
               user={user}
-              onNavigate={() => setMobileOpen(false)}
             />
-          </SheetContent>
-        </Sheet>
+          </aside>
 
-        <main className="flex-1 overflow-auto p-6">{children}</main>
+          <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
+            <SheetContent
+              side="left"
+              showCloseButton={false}
+              className="w-72 max-w-[85vw] gap-0 p-0"
+            >
+              <SheetHeader className="sr-only">
+                <SheetTitle>Navigation</SheetTitle>
+                <SheetDescription>
+                  Browse item types and collections
+                </SheetDescription>
+              </SheetHeader>
+              <DashboardSidebar
+                itemTypes={itemTypes}
+                collections={collections}
+                user={user}
+                onNavigate={() => setMobileOpen(false)}
+              />
+            </SheetContent>
+          </Sheet>
+
+          <main className="flex-1 overflow-auto p-6">{children}</main>
+        </div>
       </div>
-    </div>
+    </ItemDrawer>
   );
 }

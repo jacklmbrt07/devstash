@@ -20,6 +20,25 @@ export interface DashboardItem {
   tags: string[];
 }
 
+export interface ItemDetail {
+  id: string;
+  title: string;
+  description: string | null;
+  content: string | null;
+  contentType: "TEXT" | "FILE" | "URL";
+  url: string | null;
+  fileName: string | null;
+  language: string | null;
+  isFavorite: boolean;
+  isPinned: boolean;
+  createdAt: string;
+  updatedAt: string;
+  typeName: string;
+  typeColor: string;
+  tags: string[];
+  collections: { id: string; name: string }[];
+}
+
 export interface ItemStats {
   total: number;
   favorites: number;
@@ -115,6 +134,53 @@ export async function getRecentItems(): Promise<DashboardItem[]> {
 
   const rows = await itemQuery(userId, false).limit(RECENT_ITEM_LIMIT).all();
   return rows.map(toDashboardItem);
+}
+
+function readContentType(value: string): ItemDetail["contentType"] {
+  if (value === "FILE" || value === "URL") return value;
+  return "TEXT";
+}
+
+export async function getItemById(id: string): Promise<ItemDetail | null> {
+  const userId = await getDemoUserId();
+  if (!userId) return null;
+
+  const row = await db.orm.public.Item.where({ id, userId })
+    .include("itemType", (itemType) => itemType.select("name", "color"))
+    .include("itemTags", (links) =>
+      links.include("tag", (tag) => tag.select("name"))
+    )
+    .include("itemCollections", (links) =>
+      links.include("collection", (collection) =>
+        collection.select("id", "name")
+      )
+    )
+    .first();
+
+  if (!row) return null;
+
+  return {
+    id: row.id,
+    title: row.title,
+    description: row.description,
+    content: row.content,
+    contentType: readContentType(row.contentType),
+    url: row.url,
+    fileName: row.fileName,
+    language: row.language,
+    isFavorite: row.isFavorite,
+    isPinned: row.isPinned,
+    createdAt: toIsoTimestamp(row.createdAt),
+    updatedAt: toIsoTimestamp(row.updatedAt),
+    typeName: row.itemType?.name ?? "item",
+    typeColor: row.itemType?.color ?? "#6b7280",
+    tags: row.itemTags.flatMap((link) => (link.tag?.name ? [link.tag.name] : [])),
+    collections: row.itemCollections.flatMap((link) =>
+      link.collection
+        ? [{ id: link.collection.id, name: link.collection.name }]
+        : []
+    ),
+  };
 }
 
 export async function getItemsByType(typeName: string): Promise<DashboardItem[]> {
