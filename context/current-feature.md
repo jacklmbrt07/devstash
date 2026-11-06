@@ -1,23 +1,12 @@
-# Current Feature: Item Create
+# Current Feature
 
 ## Status
 
-In Progress
+Not Started
 
 ## Goals
 
-- Open a shadcn Dialog from the "New Item" button in the top bar
-- Type selector covers snippet, prompt, command, note, and link
-- Fields follow the selected type: title (required), description, and tags on every type; content and language on snippet and command; content on prompt and note; URL (required) on link
-- Server action `createItem` validates input with Zod
-- Query function `createItem` lives in `src/lib/db/items.ts`
-- Success shows a toast, closes the modal, and refreshes the list
-
 ## Notes
-
-- Spec: `context/features/item-create-spec.md`
-- Opens from the existing top-bar "New Item" button
-- Types match the system item types already used by the drawer and items list (file and image stay out of this dialog)
 
 ## History
 
@@ -229,3 +218,12 @@ In Progress
 - Confirming runs `deleteItem` in `src/actions/items.ts`, which checks the session, confirms ownership, and deletes through `src/lib/db/items.ts`
 - A success toast appears after the item is deleted, the drawer closes, and `router.refresh()` updates the dashboard and items list
 - A failed delete shows an error toast and leaves the item in place
+
+### Item Create
+
+- The top-bar New item button opens a shadcn Dialog
+- The type selector covers snippet, prompt, command, note, and link
+- Title, description, and tags show for every type; snippet and command also show content and language; prompt and note show content; link requires a URL
+- `createItem` in `src/actions/items.ts` checks the session and validates with Zod
+- The query in `src/lib/db/items.ts` creates the item for the signed-in user and links tags
+- A success toast closes the dialog and `router.refresh()` updates the list
