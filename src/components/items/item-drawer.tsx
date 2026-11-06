@@ -10,6 +10,7 @@ import {
 import { Copy, Pencil, Pin, Star, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 
+import { ItemDrawerEditor } from "@/components/items/item-drawer-editor";
 import { Button } from "@/components/ui/button";
 import {
   Sheet,
@@ -102,7 +103,13 @@ async function copyItemText(item: ItemDetail) {
   }
 }
 
-function ActionBar({ item }: { item: ItemDetail }) {
+function ActionBar({
+  item,
+  onEdit,
+}: {
+  item: ItemDetail;
+  onEdit: () => void;
+}) {
   return (
     <div className="flex items-center justify-between gap-2">
       <div className="flex items-center gap-0.5">
@@ -143,7 +150,7 @@ function ActionBar({ item }: { item: ItemDetail }) {
           <Trash2 />
         </Button>
       </div>
-      <Button type="button" variant="secondary" size="sm">
+      <Button type="button" variant="secondary" size="sm" onClick={onEdit}>
         <Pencil data-icon="inline-start" />
         Edit
       </Button>
@@ -151,9 +158,29 @@ function ActionBar({ item }: { item: ItemDetail }) {
   );
 }
 
-function ItemDrawerBody({ item }: { item: ItemDetail }) {
+function ItemDrawerBody({
+  item,
+  onItemChange,
+}: {
+  item: ItemDetail;
+  onItemChange: (item: ItemDetail) => void;
+}) {
+  const [editing, setEditing] = useState(false);
   const Icon = ITEM_TYPE_ICONS[item.typeName];
   const typeLabel = singularTypeLabel(item.typeName);
+
+  if (editing) {
+    return (
+      <ItemDrawerEditor
+        item={item}
+        onCancel={() => setEditing(false)}
+        onSaved={(next) => {
+          onItemChange(next);
+          setEditing(false);
+        }}
+      />
+    );
+  }
 
   return (
     <div className="flex flex-col gap-5 p-4 pr-12">
@@ -185,7 +212,7 @@ function ItemDrawerBody({ item }: { item: ItemDetail }) {
         )}
       </SheetHeader>
 
-      <ActionBar item={item} />
+      <ActionBar item={item} onEdit={() => setEditing(true)} />
 
       {item.tags.length > 0 ? (
         <DetailSection label="Tags">
@@ -321,7 +348,13 @@ export function ItemDrawer({ children }: { children: ReactNode }) {
               </SheetDescription>
             </SheetHeader>
           ) : null}
-          {state.status === "ready" ? <ItemDrawerBody item={state.item} /> : null}
+          {state.status === "ready" ? (
+            <ItemDrawerBody
+              key={state.item.id}
+              item={state.item}
+              onItemChange={(item) => setState({ status: "ready", item })}
+            />
+          ) : null}
         </SheetContent>
       </Sheet>
     </ItemDrawerContext.Provider>

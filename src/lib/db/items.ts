@@ -1,6 +1,7 @@
 import { connection } from "next/server";
 import { cache } from "react";
 
+import type { UpdateItemData } from "@/lib/items/update-item-input";
 import { db } from "@/prisma/db";
 
 /** Stand-in until authentication selects the signed-in user. */
@@ -141,10 +142,10 @@ function readContentType(value: string): ItemDetail["contentType"] {
   return "TEXT";
 }
 
-export async function getItemById(id: string): Promise<ItemDetail | null> {
-  const userId = await getDemoUserId();
-  if (!userId) return null;
-
+async function findItemDetail(
+  userId: string,
+  id: string,
+): Promise<ItemDetail | null> {
   const row = await db.orm.public.Item.where({ id, userId })
     .include("itemType", (itemType) => itemType.select("name", "color"))
     .include("itemTags", (links) =>
@@ -181,6 +182,50 @@ export async function getItemById(id: string): Promise<ItemDetail | null> {
         : []
     ),
   };
+}
+
+export async function getItemById(id: string): Promise<ItemDetail | null> {
+  const userId = await getDemoUserId();
+  if (!userId) return null;
+  return findItemDetail(userId, id);
+}
+
+async function findOrCreateTag(name: string): Promise<{ id: string }> {
+  const existing = await db.orm.public.Tag.where({ name }).select("id").first();
+  if (existing) return existing;
+
+  const created = await db.orm.public.Tag.create({ name });
+  return { id: created.id };
+}
+
+async function replaceItemTags(itemId: string, names: string[]) {
+  await db.orm.public.ItemTag.where({ a: itemId }).deleteAll();
+
+  for (const name of names) {
+    const tag = await findOrCreateTag(name);
+    await db.orm.public.ItemTag.create({ a: itemId, b: tag.id });
+  }
+}
+
+export async function updateItem(
+  userId: string,
+  itemId: string,
+  data: UpdateItemData,
+): Promise<ItemDetail | null> {
+  const updated = await db.orm.public.Item.where({
+    id: itemId,
+    userId,
+  }).update({
+    title: data.title,
+    description: data.description,
+    content: data.content,
+    url: data.url,
+    language: data.language,
+  });
+  if (!updated) return null;
+
+  await replaceItemTags(itemId, data.tags);
+  return findItemDetail(userId, itemId);
 }
 
 export async function getItemsByType(typeName: string): Promise<DashboardItem[]> {
