@@ -1,13 +1,50 @@
 "use server";
 
 import { auth } from "@/auth";
-import { updateItem as saveItem, type ItemDetail } from "@/lib/db/items";
+import {
+  deleteItem as removeItem,
+  updateItem as saveItem,
+  type ItemDetail,
+} from "@/lib/db/items";
 import { updateItemSchema } from "@/lib/items/update-item-input";
 
 export interface UpdateItemResult {
   success: boolean;
   data: ItemDetail | null;
   error: string | null;
+}
+
+export interface DeleteItemResult {
+  success: boolean;
+  data: { id: string } | null;
+  error: string | null;
+}
+
+export async function deleteItem(itemId: string): Promise<DeleteItemResult> {
+  const session = await auth();
+  const userId = session?.user?.id;
+  if (!userId) {
+    return {
+      success: false,
+      data: null,
+      error: "Sign in to delete this item",
+    };
+  }
+
+  if (typeof itemId !== "string" || itemId.trim() === "") {
+    return { success: false, data: null, error: "Item not found" };
+  }
+
+  try {
+    const deleted = await removeItem(userId, itemId);
+    if (!deleted) {
+      return { success: false, data: null, error: "Item not found" };
+    }
+    return { success: true, data: deleted, error: null };
+  } catch (error) {
+    console.error("Item delete failed:", error);
+    return { success: false, data: null, error: "Couldn't delete this item" };
+  }
 }
 
 export async function updateItem(

@@ -207,6 +207,18 @@ async function replaceItemTags(itemId: string, names: string[]) {
   }
 }
 
+export async function deleteItem(
+  userId: string,
+  itemId: string,
+): Promise<{ id: string } | null> {
+  const deleted = await db.orm.public.Item.where({
+    id: itemId,
+    userId,
+  }).delete();
+  if (!deleted) return null;
+  return { id: deleted.id };
+}
+
 export async function updateItem(
   userId: string,
   itemId: string,

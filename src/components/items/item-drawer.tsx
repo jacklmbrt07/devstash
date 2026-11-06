@@ -7,9 +7,10 @@ import {
   useState,
   type ReactNode,
 } from "react";
-import { Copy, Pencil, Pin, Star, Trash2 } from "lucide-react";
+import { Copy, Pencil, Pin, Star } from "lucide-react";
 import { toast } from "sonner";
 
+import { DeleteItemDialog } from "@/components/items/delete-item-dialog";
 import { ItemDrawerEditor } from "@/components/items/item-drawer-editor";
 import { Button } from "@/components/ui/button";
 import {
@@ -106,9 +107,11 @@ async function copyItemText(item: ItemDetail) {
 function ActionBar({
   item,
   onEdit,
+  onDeleted,
 }: {
   item: ItemDetail;
   onEdit: () => void;
+  onDeleted: () => void;
 }) {
   return (
     <div className="flex items-center justify-between gap-2">
@@ -146,9 +149,11 @@ function ActionBar({
         >
           <Copy />
         </Button>
-        <Button type="button" variant="ghost" size="icon-sm" aria-label="Delete">
-          <Trash2 />
-        </Button>
+        <DeleteItemDialog
+          itemId={item.id}
+          title={item.title}
+          onDeleted={onDeleted}
+        />
       </div>
       <Button type="button" variant="secondary" size="sm" onClick={onEdit}>
         <Pencil data-icon="inline-start" />
@@ -161,9 +166,11 @@ function ActionBar({
 function ItemDrawerBody({
   item,
   onItemChange,
+  onDeleted,
 }: {
   item: ItemDetail;
   onItemChange: (item: ItemDetail) => void;
+  onDeleted: () => void;
 }) {
   const [editing, setEditing] = useState(false);
   const Icon = ITEM_TYPE_ICONS[item.typeName];
@@ -212,7 +219,11 @@ function ItemDrawerBody({
         )}
       </SheetHeader>
 
-      <ActionBar item={item} onEdit={() => setEditing(true)} />
+      <ActionBar
+        item={item}
+        onEdit={() => setEditing(true)}
+        onDeleted={onDeleted}
+      />
 
       {item.tags.length > 0 ? (
         <DetailSection label="Tags">
@@ -353,6 +364,7 @@ export function ItemDrawer({ children }: { children: ReactNode }) {
               key={state.item.id}
               item={state.item}
               onItemChange={(item) => setState({ status: "ready", item })}
+              onDeleted={() => setItemId(null)}
             />
           ) : null}
         </SheetContent>

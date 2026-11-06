@@ -1,12 +1,22 @@
-# Current Feature
+# Current Feature: Delete Item
 
 ## Status
 
-Not Started
+In Progress
 
 ## Goals
 
+- The drawer Delete button opens a shadcn AlertDialog and nothing is removed until the user confirms
+- Confirming runs `deleteItem` in `src/actions/items.ts`, which checks the session, confirms ownership, and deletes through `src/lib/db/items.ts`
+- A success toast appears after the item is deleted, the drawer closes, and `router.refresh()` updates the dashboard and items list
+- A failed delete shows an error toast and leaves the item in place
+
 ## Notes
+
+- The trash button in `src/components/items/item-drawer.tsx` is visual only today
+- Use the existing shadcn AlertDialog pattern from `src/components/profile/delete-account-dialog.tsx` and Sonner, which already toasts on save and copy
+- Follow the `updateItem` return shape `{ success, data, error }`; the item id is the only input, so no extra Zod payload is needed
+- `ItemCollection` already cascades when an item is deleted
 
 ## History
 
