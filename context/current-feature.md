@@ -1,24 +1,12 @@
-# Current Feature: Code Editor
+# Current Feature
 
 ## Status
 
-In Progress
+Not Started
 
 ## Goals
 
-- Create a `CodeEditor` component with Monaco Editor and a dark theme
-- Use `CodeEditor` for snippets and commands only; keep `Textarea` for notes, prompts, and other non-code types
-- Add macOS-style window dots (red/yellow/green) at the top of the editor
-- Add a quick copy button in the editor header
-- Show the language in the editor header next to copy
-- Support both display (readonly) and edit modes
-- Make editor height fluid with a max of 400px and a theme-matching scrollbar
-
 ## Notes
-
-- Spec: `context/features/code-editor-spec.md`
-- Scope is the Monaco code editor UI for snippets and commands (view + edit), not a change to item types or storage
-- Non-code types continue to use the existing textarea
 
 ## History
 
@@ -239,3 +227,11 @@ In Progress
 - `createItem` in `src/actions/items.ts` checks the session and validates with Zod
 - The query in `src/lib/db/items.ts` creates the item for the signed-in user and links tags
 - A success toast closes the dialog and `router.refresh()` updates the list
+
+### Code Editor
+
+- Snippets and commands use a Monaco `CodeEditor` with a dark theme in create, drawer view, and drawer edit
+- Notes, prompts, and other non-code types keep the existing textarea or plain content display
+- The editor chrome includes macOS window dots, the language label, and a quick copy button
+- Height grows with content up to 400px, with a theme-matching scrollbar for overflow
+- Helpers live in `src/lib/items/code-editor.ts` with Vitest coverage for type checks, language aliases, and height
