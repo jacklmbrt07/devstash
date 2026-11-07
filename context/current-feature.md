@@ -1,24 +1,16 @@
-# Current Feature: Collection Edit / Delete / Favorite Actions
+# Current Feature
 
 ## Status
 
-In Progress
+Not Started
 
 ## Goals
 
-- On `/collections/[id]`, show Edit, Delete, and Favorite action buttons
-- Favorite is UI-only for now (icon/button present; no persistence or toggle logic)
-- Edit opens a modal to update collection metadata (name, description)
-- Delete shows a confirmation dialog; confirming removes the collection, not its items (items remain; they are only unlinked from that collection)
-- On collection cards at `/collections` and the dashboard, the 3-dots menu opens a dropdown with Edit, Delete, and Favorite
-- Clicking anywhere else on a collection card navigates to that collection's page
+<!-- Feature goals -->
 
 ## Notes
 
-- Do not implement favorites persistence yet — just the icon/button
-- Deleting a collection must not delete items; only remove the collection (and its item associations)
-- Card click vs menu: the 3-dots dropdown must stop propagation so opening the menu does not navigate away
-- Reuse existing patterns for modals, confirmation dialogs, and collection create/update where possible
+<!-- Spec notes / constraints -->
 
 ## History
 
@@ -305,3 +297,11 @@ In Progress
 - Sidebar "View all collections" links to `/collections`
 - Collection cards on the list, dashboard, and sidebar link to `/collections/[id]`
 - Already present from earlier work; verified against the feature goals
+
+### Collection Edit / Delete / Favorite Actions
+
+- `/collections/[id]` has Edit, Delete, and Favorite action buttons; Favorite is UI-only
+- Edit opens a modal for name and description via `updateCollection`
+- Delete confirms, then removes the collection only; items stay and are unlinked via cascade on join rows
+- Collection cards on `/collections` and the dashboard use a 3-dots menu for Edit, Delete, and Favorite
+- Card body still navigates to `/collections/[id]`; the menu sits outside the link
