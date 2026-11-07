@@ -1,23 +1,12 @@
-# Current Feature: Image Gallery View
+# Current Feature
 
 ## Status
 
-In Progress
+Not Started
 
 ## Goals
 
-- Create an image thumbnail card to replace the current item card for images
-- Show an image grid/gallery with 3 columns
-- Display image thumbnails with 16:9 aspect ratio (`aspect-video`)
-- Use `object-cover` to fill the card (may crop edges)
-- Add a subtle hover zoom effect (5% scale with 300ms transition)
-
 ## Notes
-
-- Spec: `context/features/image-display-spec.md`
-- Replaces the regular item card with thumbnail cards for the image gallery view
-- Aspect ratio uses Tailwind `aspect-video` (16:9)
-- Hover: 5% scale, 300ms transition
 
 ## History
 
@@ -272,3 +261,11 @@ In Progress
 - Row click opens ItemDrawer; download stops propagation and hits `/api/download/[id]`
 - Mobile stacks name, size, and date vertically; other item types keep the card grid
 - Helpers live in `src/lib/items/file-display.ts` with Vitest coverage; `DashboardItem` includes file metadata
+
+### Image Gallery View
+
+- `/items/images` uses a thumbnail gallery instead of the file list or item cards
+- `ImageThumbnailCard` shows a 16:9 (`aspect-video`) preview with `object-cover` and a 5% hover zoom (300ms)
+- Gallery is one column on small screens, two from `md`, three from `lg`
+- Click opens ItemDrawer; `/items/files` stays on the Drive-style list
+- `DashboardItem` includes `fileUrl` so list queries can render R2 thumbnails
