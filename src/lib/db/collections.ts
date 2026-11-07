@@ -1,6 +1,7 @@
 import { connection } from "next/server";
 import { cache } from "react";
 
+import type { DashboardItem } from "@/lib/db/items";
 import { db } from "@/prisma/db";
 
 /** Stand-in until authentication selects the signed-in user. */
@@ -53,6 +54,17 @@ export interface SidebarCollections {
   recent: SidebarRecentCollection[];
 }
 
+export interface CollectionDetail {
+  id: string;
+  name: string;
+  description: string | null;
+  isFavorite: boolean;
+  updatedAt: string;
+  borderColor: string | null;
+  types: CollectionTypeSummary[];
+  items: DashboardItem[];
+}
+
 const SIDEBAR_RECENT_LIMIT = 4;
 
 const getDemoUserId = cache(async (): Promise<string | null> => {
@@ -102,41 +114,132 @@ function toIsoTimestamp(value: string): string {
   return `${normalized}Z`;
 }
 
-export async function getRecentCollections(): Promise<DashboardCollection[]> {
+function collectionTypeSummaries(
+  itemCollections: {
+    item: { itemType: { name: string; color: string } | null } | null;
+  }[],
+): CollectionTypeSummary[] {
+  return itemCollections.flatMap((link) => {
+    const itemType = link.item?.itemType;
+    if (!itemType) return [];
+    return [{ name: itemType.name, color: itemType.color }];
+  });
+}
+
+function toDashboardCollection(row: {
+  id: string;
+  name: string;
+  description: string | null;
+  isFavorite: boolean;
+  updatedAt: string;
+  itemCollections: {
+    item: { itemType: { name: string; color: string } | null } | null;
+  }[];
+}): DashboardCollection {
+  const summary = summarizeCollectionTypes(
+    collectionTypeSummaries(row.itemCollections),
+  );
+
+  return {
+    id: row.id,
+    name: row.name,
+    description: row.description,
+    isFavorite: row.isFavorite,
+    updatedAt: toIsoTimestamp(row.updatedAt),
+    itemCount: row.itemCollections.length,
+    borderColor: summary.borderColor,
+    types: summary.types,
+  };
+}
+
+async function listCollections(limit?: number): Promise<DashboardCollection[]> {
   const userId = await getDemoUserId();
   if (!userId) return [];
 
-  const rows = await db.orm.public.Collection.where({ userId })
+  let query = db.orm.public.Collection.where({ userId })
     .orderBy((collection) => collection.updatedAt.desc())
-    .limit(RECENT_COLLECTION_LIMIT)
     .include("itemCollections", (links) =>
       links.include("item", (item) =>
         item
           .select("id")
+          .include("itemType", (itemType) => itemType.select("name", "color")),
+      ),
+    );
+
+  if (limit !== undefined) {
+    query = query.limit(limit);
+  }
+
+  const rows = await query.all();
+  return rows.map(toDashboardCollection);
+}
+
+export async function getRecentCollections(): Promise<DashboardCollection[]> {
+  return listCollections(RECENT_COLLECTION_LIMIT);
+}
+
+export async function getAllCollections(): Promise<DashboardCollection[]> {
+  return listCollections();
+}
+
+export async function getCollectionById(
+  id: string,
+): Promise<CollectionDetail | null> {
+  const userId = await getDemoUserId();
+  if (!userId) return null;
+
+  const row = await db.orm.public.Collection.where({ id, userId })
+    .include("itemCollections", (links) =>
+      links.include("item", (item) =>
+        item
           .include("itemType", (itemType) => itemType.select("name", "color"))
-      )
+          .include("itemTags", (tags) =>
+            tags.include("tag", (tag) => tag.select("name")),
+          ),
+      ),
     )
-    .all();
+    .first();
 
-  return rows.map((row) => {
-    const types = row.itemCollections.flatMap((link) => {
-      const itemType = link.item?.itemType;
-      if (!itemType) return [];
-      return [{ name: itemType.name, color: itemType.color }];
-    });
-    const summary = summarizeCollectionTypes(types);
+  if (!row) return null;
 
-    return {
-      id: row.id,
-      name: row.name,
-      description: row.description,
-      isFavorite: row.isFavorite,
-      updatedAt: toIsoTimestamp(row.updatedAt),
-      itemCount: row.itemCollections.length,
-      borderColor: summary.borderColor,
-      types: summary.types,
-    };
-  });
+  const types = collectionTypeSummaries(row.itemCollections);
+  const summary = summarizeCollectionTypes(types);
+
+  const items: DashboardItem[] = row.itemCollections
+    .flatMap((link) => {
+      const item = link.item;
+      if (!item) return [];
+      return [
+        {
+          id: item.id,
+          title: item.title,
+          description: item.description,
+          isFavorite: item.isFavorite,
+          isPinned: item.isPinned,
+          updatedAt: toIsoTimestamp(item.updatedAt),
+          typeName: item.itemType?.name ?? "item",
+          typeColor: item.itemType?.color ?? "#6b7280",
+          tags: item.itemTags.flatMap((tagLink) =>
+            tagLink.tag?.name ? [tagLink.tag.name] : [],
+          ),
+        },
+      ];
+    })
+    .sort(
+      (a, b) =>
+        new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime(),
+    );
+
+  return {
+    id: row.id,
+    name: row.name,
+    description: row.description,
+    isFavorite: row.isFavorite,
+    updatedAt: toIsoTimestamp(row.updatedAt),
+    borderColor: summary.borderColor,
+    types: summary.types,
+    items,
+  };
 }
 
 export async function getSidebarCollections(): Promise<SidebarCollections> {

@@ -7,6 +7,10 @@ import { toast } from "sonner";
 
 import { createItem } from "@/actions/items";
 import { CodeEditor, isCodeItemType } from "@/components/items/code-editor";
+import {
+  MarkdownEditor,
+  isMarkdownItemType,
+} from "@/components/items/markdown-editor";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -48,10 +52,10 @@ function Field({
   children: ReactNode;
 }) {
   return (
-    <label className="flex flex-col gap-1.5 text-sm font-medium">
-      {label}
+    <div className="flex flex-col gap-1.5 text-sm font-medium">
+      <span>{label}</span>
       {children}
-    </label>
+    </div>
   );
 }
 
@@ -221,6 +225,12 @@ export function CreateItemDialog() {
                 <CodeEditor
                   value={form.content}
                   language={form.language}
+                  onChange={(content) => update("content", content)}
+                  disabled={saving}
+                />
+              ) : isMarkdownItemType(form.type) ? (
+                <MarkdownEditor
+                  value={form.content}
                   onChange={(content) => update("content", content)}
                   disabled={saving}
                 />

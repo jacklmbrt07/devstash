@@ -6,6 +6,10 @@ import { toast } from "sonner";
 
 import { updateItem } from "@/actions/items";
 import { CodeEditor, isCodeItemType } from "@/components/items/code-editor";
+import {
+  MarkdownEditor,
+  isMarkdownItemType,
+} from "@/components/items/markdown-editor";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -44,10 +48,10 @@ function Field({
   children: ReactNode;
 }) {
   return (
-    <label className="flex flex-col gap-1.5 text-sm font-medium">
-      {label}
+    <div className="flex flex-col gap-1.5 text-sm font-medium">
+      <span>{label}</span>
       {children}
-    </label>
+    </div>
   );
 }
 
@@ -185,6 +189,12 @@ export function ItemDrawerEditor({
             <CodeEditor
               value={content}
               language={language}
+              onChange={setContent}
+              disabled={saving}
+            />
+          ) : isMarkdownItemType(item.typeName) ? (
+            <MarkdownEditor
+              value={content}
               onChange={setContent}
               disabled={saving}
             />

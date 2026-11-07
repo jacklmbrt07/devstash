@@ -138,3 +138,170 @@
 .code-editor .monaco-scrollable-element > .scrollbar > .slider:hover {
   background: color-mix(in oklch, white 35%, transparent) !important;
 }
+
+/* Markdown preview — dark editor chrome */
+.markdown-preview {
+  line-height: 1.6;
+}
+
+.markdown-preview > :first-child {
+  margin-top: 0;
+}
+
+.markdown-preview > :last-child {
+  margin-bottom: 0;
+}
+
+.markdown-preview h1,
+.markdown-preview h2,
+.markdown-preview h3,
+.markdown-preview h4,
+.markdown-preview h5,
+.markdown-preview h6 {
+  color: #f5f5f5;
+  font-weight: 600;
+  line-height: 1.25;
+  margin: 1.1em 0 0.5em;
+}
+
+.markdown-preview h1 {
+  font-size: 1.5rem;
+  border-bottom: 1px solid rgb(255 255 255 / 0.12);
+  padding-bottom: 0.3em;
+}
+
+.markdown-preview h2 {
+  font-size: 1.25rem;
+  border-bottom: 1px solid rgb(255 255 255 / 0.1);
+  padding-bottom: 0.25em;
+}
+
+.markdown-preview h3 {
+  font-size: 1.1rem;
+}
+
+.markdown-preview h4 {
+  font-size: 1rem;
+}
+
+.markdown-preview h5,
+.markdown-preview h6 {
+  font-size: 0.875rem;
+  color: rgb(255 255 255 / 0.75);
+}
+
+.markdown-preview p {
+  margin: 0.75em 0;
+}
+
+.markdown-preview a {
+  color: #60a5fa;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.markdown-preview a:hover {
+  color: #93c5fd;
+}
+
+.markdown-preview strong {
+  color: #fff;
+  font-weight: 650;
+}
+
+.markdown-preview em {
+  font-style: italic;
+}
+
+.markdown-preview del {
+  color: rgb(255 255 255 / 0.55);
+  text-decoration: line-through;
+}
+
+.markdown-preview ul,
+.markdown-preview ol {
+  margin: 0.75em 0;
+  padding-left: 1.5em;
+}
+
+.markdown-preview ul {
+  list-style: disc;
+}
+
+.markdown-preview ol {
+  list-style: decimal;
+}
+
+.markdown-preview li {
+  margin: 0.25em 0;
+}
+
+.markdown-preview li > ul,
+.markdown-preview li > ol {
+  margin: 0.25em 0;
+}
+
+.markdown-preview blockquote {
+  margin: 0.75em 0;
+  padding: 0.25em 0 0.25em 0.9em;
+  border-left: 3px solid #60a5fa;
+  color: rgb(255 255 255 / 0.7);
+}
+
+.markdown-preview hr {
+  margin: 1.25em 0;
+  border: 0;
+  border-top: 1px solid rgb(255 255 255 / 0.12);
+}
+
+.markdown-preview code {
+  font-family: var(--font-geist-mono), ui-monospace, monospace;
+  font-size: 0.85em;
+  background: rgb(255 255 255 / 0.08);
+  border-radius: 0.25rem;
+  padding: 0.15em 0.35em;
+}
+
+.markdown-preview pre {
+  margin: 0.85em 0;
+  overflow-x: auto;
+  border-radius: 0.5rem;
+  background: #141414;
+  padding: 0.75rem 0.9rem;
+}
+
+.markdown-preview pre code {
+  background: transparent;
+  padding: 0;
+  font-size: 0.75rem;
+  line-height: 1.55;
+  color: rgb(255 255 255 / 0.9);
+}
+
+.markdown-preview table {
+  width: 100%;
+  margin: 0.85em 0;
+  border-collapse: collapse;
+  font-size: 0.875rem;
+}
+
+.markdown-preview th,
+.markdown-preview td {
+  border: 1px solid rgb(255 255 255 / 0.15);
+  padding: 0.4em 0.65em;
+  text-align: left;
+}
+
+.markdown-preview th {
+  background: rgb(255 255 255 / 0.08);
+  font-weight: 600;
+  color: #f5f5f5;
+}
+
+.markdown-preview tr:nth-child(even) td {
+  background: rgb(255 255 255 / 0.03);
+}
+
+.markdown-preview input[type="checkbox"] {
+  margin-right: 0.4em;
+}
