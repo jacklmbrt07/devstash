@@ -1,16 +1,22 @@
-# Current Feature
+# Current Feature: Settings Page
 
 ## Status
 
-Not Started
+In Progress
 
 ## Goals
 
-<!-- Feature goals -->
+- Create a protected `/settings` page rendered in the dashboard shell
+- Add a Settings link in the user icon dropdown at the bottom of the sidebar
+- Move Account actions (delete account and forgot password) from `/profile` to `/settings`
+- Keep profile focused on identity, usage stats, and password change for credentials accounts
 
 ## Notes
 
-<!-- Spec notes / constraints -->
+- URL must be `/settings` and require authentication (same protection pattern as `/profile` and `/dashboard`)
+- Sidebar user dropdown currently has Sign out; Settings should be added there
+- "Forgot password" on the profile likely means the password-reset / change-password flow that lives under Account actions — confirm against the profile page before moving
+- Delete account confirmation dialog should move with the Account actions section
 
 ## History
 

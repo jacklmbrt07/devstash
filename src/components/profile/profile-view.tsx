@@ -1,7 +1,6 @@
 import { Folder, Layers } from "lucide-react";
 
 import { ChangePasswordDialog } from "@/components/profile/change-password-dialog";
-import { DeleteAccountDialog } from "@/components/profile/delete-account-dialog";
 import { UserAvatar } from "@/components/auth/user-avatar";
 import {
   Card,
@@ -134,20 +133,19 @@ export function ProfileView({ profile }: { profile: Profile }) {
         </CardContent>
       </Card>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Account</CardTitle>
-          <CardDescription>
-            {profile.canChangePassword
-              ? "Update your password or delete this account."
-              : "This account signs in with GitHub."}
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="flex flex-wrap gap-2">
-          {profile.canChangePassword ? <ChangePasswordDialog /> : null}
-          <DeleteAccountDialog />
-        </CardContent>
-      </Card>
+      {profile.canChangePassword ? (
+        <Card>
+          <CardHeader>
+            <CardTitle>Password</CardTitle>
+            <CardDescription>
+              Update the password for this email account.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="flex flex-wrap gap-2">
+            <ChangePasswordDialog />
+          </CardContent>
+        </Card>
+      ) : null}
     </div>
   );
 }

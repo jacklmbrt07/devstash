@@ -79,6 +79,17 @@ export function SidebarUser({ user, collapsed = false, onNavigate }: SidebarUser
           role="menu"
           className="absolute right-0 bottom-full left-0 z-20 mb-2 rounded-md border border-border bg-popover p-1 text-popover-foreground shadow-md"
         >
+          <Link
+            href="/settings"
+            role="menuitem"
+            className="block w-full rounded-sm px-2 py-1.5 text-left text-sm hover:bg-accent"
+            onClick={() => {
+              setOpen(false);
+              onNavigate?.();
+            }}
+          >
+            Settings
+          </Link>
           <form action={signOutAction}>
             <button
               type="submit"
