@@ -1,24 +1,16 @@
-# Current Feature: Collection Create
+# Current Feature
 
 ## Status
 
-In Progress
+Not Started
 
 ## Goals
 
-- Add a top-bar button to create a new collection (name + description)
-- Follow the same patterns as items: user-scoped, server-component fetches via `lib/db`, API routes / actions for client-side mutations
-- Create button opens a modal with the required fields
-- Show a toast on success or failure
-- After save, UI updates so the new collection appears (e.g. `router.refresh()`)
+<!-- Feature goals -->
 
 ## Notes
 
-- Collections are user-scoped for reads and writes (session `userId` passed into `lib/db` helpers)
-- Mirror item create: Zod validation, session check, db helper in `src/lib/db/collections.ts`, create action, dialog in top bar
-- Fields: name (required), description (optional)
-- Do not implement edit/delete/favorites or add-items-to-collection in this feature
-- Item list queries still use the demo-user stand-in; only collections were switched to the signed-in user for this feature
+<!-- Spec notes / constraints -->
 
 ## History
 
@@ -282,3 +274,11 @@ In Progress
 - Link and file URLs require http(s) via Zod; the drawer only renders safe external `href`s
 - `next/image` is configured for the R2 public host; gallery, drawer, and upload use `RemoteImage`
 - `POST /api/upload` is rate-limited to 30 requests per hour per authenticated user
+
+### Collection Create
+
+- Top-bar New collection button opens a shadcn Dialog with name and optional description
+- `createCollection` in `src/actions/collections.ts` checks the session and validates with Zod
+- The query in `src/lib/db/collections.ts` creates the collection for the signed-in user
+- Collection list, detail, sidebar, and stats helpers take `userId` from the session (no demo-user stand-in)
+- A success toast closes the dialog and `router.refresh()` updates the UI
