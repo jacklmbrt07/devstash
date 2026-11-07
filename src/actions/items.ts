@@ -9,6 +9,7 @@ import {
 } from "@/lib/db/items";
 import { createItemSchema } from "@/lib/items/create-item-input";
 import { updateItemSchema } from "@/lib/items/update-item-input";
+import { deleteStoredFile } from "@/lib/r2";
 
 export interface UpdateItemResult {
   success: boolean;
@@ -84,7 +85,8 @@ export async function deleteItem(itemId: string): Promise<DeleteItemResult> {
     if (!deleted) {
       return { success: false, data: null, error: "Item not found" };
     }
-    return { success: true, data: deleted, error: null };
+    await deleteStoredFile(deleted.fileUrl);
+    return { success: true, data: { id: deleted.id }, error: null };
   } catch (error) {
     console.error("Item delete failed:", error);
     return { success: false, data: null, error: "Couldn't delete this item" };

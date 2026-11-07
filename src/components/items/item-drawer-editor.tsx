@@ -25,6 +25,7 @@ import {
 import type { ItemDetail } from "@/lib/db/items";
 import { formatAbsoluteDate } from "@/lib/format-relative-time";
 import { languageSelectOptions } from "@/lib/items/code-editor";
+import { formatFileSize } from "@/lib/items/file-upload";
 
 const SELECT_CLASS =
   "h-8 w-full rounded-lg border border-input bg-transparent px-2.5 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 disabled:opacity-50 dark:bg-input/30";
@@ -243,7 +244,10 @@ export function ItemDrawerEditor({
       {item.fileName ? (
         <p className="text-sm">
           <span className="font-medium">File</span>{" "}
-          <span className="text-muted-foreground">{item.fileName}</span>
+          <span className="text-muted-foreground">
+            {item.fileName}
+            {item.fileSize != null ? ` · ${formatFileSize(item.fileSize)}` : ""}
+          </span>
         </p>
       ) : null}
 

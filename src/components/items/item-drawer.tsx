@@ -7,7 +7,7 @@ import {
   useState,
   type ReactNode,
 } from "react";
-import { Copy, Pencil, Pin, Star } from "lucide-react";
+import { Copy, Download, Pencil, Pin, Star } from "lucide-react";
 import { toast } from "sonner";
 
 import { CodeEditor, isCodeItemType } from "@/components/items/code-editor";
@@ -31,6 +31,7 @@ import {
 } from "@/lib/constants/item-types";
 import type { ItemDetail } from "@/lib/db/items";
 import { formatRelativeTime } from "@/lib/format-relative-time";
+import { formatFileSize } from "@/lib/items/file-upload";
 
 interface ItemDrawerContextValue {
   openItem: (id: string) => void;
@@ -118,6 +119,8 @@ function ActionBar({
   onEdit: () => void;
   onDeleted: () => void;
 }) {
+  const canDownload = item.contentType === "FILE" && Boolean(item.fileUrl);
+
   return (
     <div className="flex items-center justify-between gap-2">
       <div className="flex items-center gap-0.5">
@@ -154,6 +157,19 @@ function ActionBar({
         >
           <Copy />
         </Button>
+        {canDownload ? (
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon-sm"
+            aria-label="Download"
+            onClick={() => {
+              window.location.assign(`/api/download/${item.id}`);
+            }}
+          >
+            <Download />
+          </Button>
+        ) : null}
         <DeleteItemDialog
           itemId={item.id}
           title={item.title}
@@ -273,9 +289,34 @@ function ItemDrawerBody({
         </DetailSection>
       ) : null}
 
-      {item.fileName ? (
+      {item.contentType === "FILE" && item.typeName === "image" && item.fileUrl ? (
+        <DetailSection label="Image">
+          {/* eslint-disable-next-line @next/next/no-img-element -- remote R2 preview; next/image not configured for R2 */}
+          <img
+            src={item.fileUrl}
+            alt={item.fileName ?? item.title}
+            className="max-h-80 w-full rounded-lg object-contain bg-muted/40"
+          />
+          {item.fileName ? (
+            <p className="text-sm text-muted-foreground">
+              {item.fileName}
+              {item.fileSize != null ? ` · ${formatFileSize(item.fileSize)}` : ""}
+            </p>
+          ) : null}
+        </DetailSection>
+      ) : null}
+
+      {item.contentType === "FILE" && item.typeName !== "image" && item.fileName ? (
         <DetailSection label="File">
-          <p className="text-sm">{item.fileName}</p>
+          <p className="text-sm">
+            {item.fileName}
+            {item.fileSize != null ? (
+              <span className="text-muted-foreground">
+                {" "}
+                · {formatFileSize(item.fileSize)}
+              </span>
+            ) : null}
+          </p>
         </DetailSection>
       ) : null}
 

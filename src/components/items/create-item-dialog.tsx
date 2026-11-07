@@ -8,6 +8,10 @@ import { toast } from "sonner";
 import { createItem } from "@/actions/items";
 import { CodeEditor, isCodeItemType } from "@/components/items/code-editor";
 import {
+  FileUpload,
+  type UploadedFile,
+} from "@/components/items/file-upload";
+import {
   MarkdownEditor,
   isMarkdownItemType,
 } from "@/components/items/markdown-editor";
@@ -40,6 +44,7 @@ const CONTENT_TYPES = new Set<CreatableItemType>([
   "note",
 ]);
 const LANGUAGE_TYPES = new Set<CreatableItemType>(["snippet", "command"]);
+const FILE_TYPES = new Set<CreatableItemType>(["file", "image"]);
 
 function tagList(value: string): string[] {
   return value
@@ -71,6 +76,7 @@ const emptyForm = {
   content: "",
   language: "",
   url: "",
+  upload: null as UploadedFile | null,
 };
 
 export function CreateItemDialog() {
@@ -83,8 +89,10 @@ export function CreateItemDialog() {
   const showContent = CONTENT_TYPES.has(form.type);
   const showLanguage = LANGUAGE_TYPES.has(form.type);
   const showUrl = form.type === "link";
+  const showUpload = FILE_TYPES.has(form.type);
   const titleMissing = form.title.trim().length === 0;
   const urlMissing = showUrl && form.url.trim().length === 0;
+  const fileMissing = showUpload && form.upload === null;
 
   function update<Key extends keyof typeof emptyForm>(
     key: Key,
@@ -106,7 +114,7 @@ export function CreateItemDialog() {
   }
 
   async function save() {
-    if (titleMissing || urlMissing || saving) return;
+    if (titleMissing || urlMissing || fileMissing || saving) return;
     setSaving(true);
     setError(null);
 
@@ -118,6 +126,13 @@ export function CreateItemDialog() {
       ...(showContent ? { content: form.content } : {}),
       ...(showLanguage ? { language: form.language } : {}),
       ...(showUrl ? { url: form.url } : {}),
+      ...(showUpload && form.upload
+        ? {
+            fileUrl: form.upload.fileUrl,
+            fileName: form.upload.fileName,
+            fileSize: form.upload.fileSize,
+          }
+        : {}),
     });
 
     if (!result.success || !result.data) {
@@ -152,16 +167,22 @@ export function CreateItemDialog() {
           <DialogHeader>
             <DialogTitle>New item</DialogTitle>
             <DialogDescription>
-              Save a snippet, prompt, command, note, or link.
+              Save a snippet, prompt, command, note, file, image, or link.
             </DialogDescription>
           </DialogHeader>
 
           <Field label="Type">
             <select
               value={form.type}
-              onChange={(event) =>
-                update("type", event.target.value as CreatableItemType)
-              }
+              onChange={(event) => {
+                const nextType = event.target.value as CreatableItemType;
+                setForm((current) => ({
+                  ...current,
+                  type: nextType,
+                  // File and image share storage fields but not accept rules.
+                  upload: nextType === current.type ? current.upload : null,
+                }));
+              }}
               disabled={saving}
               className={SELECT_CLASS}
             >
@@ -231,6 +252,17 @@ export function CreateItemDialog() {
             </Field>
           ) : null}
 
+          {showUpload ? (
+            <Field label={form.type === "image" ? "Image" : "File"}>
+              <FileUpload
+                kind={form.type === "image" ? "image" : "file"}
+                value={form.upload}
+                onChange={(upload) => update("upload", upload)}
+                disabled={saving}
+              />
+            </Field>
+          ) : null}
+
           {showContent ? (
             <Field label="Content">
               {isCodeItemType(form.type) ? (
@@ -273,7 +305,10 @@ export function CreateItemDialog() {
             >
               Cancel
             </Button>
-            <Button type="submit" disabled={saving || titleMissing || urlMissing}>
+            <Button
+              type="submit"
+              disabled={saving || titleMissing || urlMissing || fileMissing}
+            >
               {saving ? "Creating…" : "Create"}
             </Button>
           </DialogFooter>

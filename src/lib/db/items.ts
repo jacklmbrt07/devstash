@@ -29,7 +29,9 @@ export interface ItemDetail {
   content: string | null;
   contentType: "TEXT" | "FILE" | "URL";
   url: string | null;
+  fileUrl: string | null;
   fileName: string | null;
+  fileSize: number | null;
   language: string | null;
   isFavorite: boolean;
   isPinned: boolean;
@@ -168,7 +170,9 @@ async function findItemDetail(
     content: row.content,
     contentType: readContentType(row.contentType),
     url: row.url,
+    fileUrl: row.fileUrl,
     fileName: row.fileName,
+    fileSize: row.fileSize,
     language: row.language,
     isFavorite: row.isFavorite,
     isPinned: row.isPinned,
@@ -183,6 +187,13 @@ async function findItemDetail(
         : []
     ),
   };
+}
+
+export async function getItemForUser(
+  userId: string,
+  id: string,
+): Promise<ItemDetail | null> {
+  return findItemDetail(userId, id);
 }
 
 export async function getItemById(id: string): Promise<ItemDetail | null> {
@@ -211,13 +222,13 @@ async function replaceItemTags(itemId: string, names: string[]) {
 export async function deleteItem(
   userId: string,
   itemId: string,
-): Promise<{ id: string } | null> {
+): Promise<{ id: string; fileUrl: string | null } | null> {
   const deleted = await db.orm.public.Item.where({
     id: itemId,
     userId,
   }).delete();
   if (!deleted) return null;
-  return { id: deleted.id };
+  return { id: deleted.id, fileUrl: deleted.fileUrl };
 }
 
 function fieldsForNewItem(data: CreateItemData) {
@@ -229,6 +240,9 @@ function fieldsForNewItem(data: CreateItemData) {
         content: data.content,
         language: data.language,
         url: null,
+        fileUrl: null,
+        fileName: null,
+        fileSize: null,
       };
     case "prompt":
     case "note":
@@ -237,6 +251,20 @@ function fieldsForNewItem(data: CreateItemData) {
         content: data.content,
         language: null,
         url: null,
+        fileUrl: null,
+        fileName: null,
+        fileSize: null,
+      };
+    case "file":
+    case "image":
+      return {
+        contentType: "FILE" as const,
+        content: null,
+        language: null,
+        url: null,
+        fileUrl: data.fileUrl,
+        fileName: data.fileName,
+        fileSize: data.fileSize,
       };
     case "link":
       return {
@@ -244,6 +272,9 @@ function fieldsForNewItem(data: CreateItemData) {
         content: null,
         language: null,
         url: data.url,
+        fileUrl: null,
+        fileName: null,
+        fileSize: null,
       };
   }
 }
@@ -268,6 +299,9 @@ export async function createItem(
     content: fields.content,
     url: fields.url,
     language: fields.language,
+    fileUrl: fields.fileUrl,
+    fileName: fields.fileName,
+    fileSize: fields.fileSize,
     userId,
     itemTypeId: itemType.id,
   });

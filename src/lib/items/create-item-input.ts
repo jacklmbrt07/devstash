@@ -5,6 +5,8 @@ export const CREATABLE_ITEM_TYPES = [
   "prompt",
   "command",
   "note",
+  "file",
+  "image",
   "link",
 ] as const;
 
@@ -15,6 +17,8 @@ export const CREATABLE_ITEM_TYPE_LABELS: Record<CreatableItemType, string> = {
   prompt: "Prompt",
   command: "Command",
   note: "Note",
+  file: "File",
+  image: "Image",
   link: "Link",
 };
 
@@ -53,11 +57,27 @@ const codedItem = textItem.extend({
   language: nullableText,
 });
 
+const fileFields = {
+  fileUrl: z.string().trim().min(1, "Upload a file first").pipe(z.url("Upload a file first")),
+  fileName: z.string().trim().min(1, "Upload a file first"),
+  fileSize: z.number().int().positive("Upload a file first"),
+};
+
 export const createItemSchema = z.discriminatedUnion("type", [
   codedItem.extend({ type: z.literal("snippet") }),
   codedItem.extend({ type: z.literal("command") }),
   textItem.extend({ type: z.literal("prompt") }),
   textItem.extend({ type: z.literal("note") }),
+  z.object({
+    ...sharedFields,
+    type: z.literal("file"),
+    ...fileFields,
+  }),
+  z.object({
+    ...sharedFields,
+    type: z.literal("image"),
+    ...fileFields,
+  }),
   z.object({
     ...sharedFields,
     type: z.literal("link"),
