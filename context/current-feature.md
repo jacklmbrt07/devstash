@@ -1,23 +1,16 @@
-# Current Feature: Collections Pages
+# Current Feature
 
 ## Status
 
-Complete
+Not Started
 
 ## Goals
 
-- Create the `/collections` page that lists the signed-in user's collections
-- Create the `/collections/[id]` page that shows the items in that collection
-- Reuse the existing collection and item cards
-- Link "View all collections" in the sidebar to `/collections`
-- Link all collection cards to their `/collections/[id]` page
+<!-- Feature goals -->
 
 ## Notes
 
-- Follow existing dashboard patterns: server components fetch via `lib/db`, session-scoped data
-- Use existing cards rather than inventing new card UIs
-- Collection create and add-items-to-collections are already done; this feature is display/navigation only
-- Do not implement collection edit/delete/favorite yet (separate prompt)
+<!-- Spec notes / constraints -->
 
 ## History
 
@@ -296,3 +289,11 @@ Complete
 - `collectionIds` is validated in create/update Zod schemas and written via `replaceItemCollections`
 - Options load through `listCollectionOptions` for the signed-in user
 - Collection pages were left unchanged
+
+### Collections Pages
+
+- `/collections` lists the signed-in user's collections with existing `CollectionCard` components
+- `/collections/[id]` shows that collection's items with existing `ItemCard` components
+- Sidebar "View all collections" links to `/collections`
+- Collection cards on the list, dashboard, and sidebar link to `/collections/[id]`
+- Already present from earlier work; verified against the feature goals
