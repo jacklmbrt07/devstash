@@ -18,7 +18,13 @@ export async function generateMetadata({
   params: Promise<{ id: string }>;
 }): Promise<Metadata> {
   const { id } = await params;
-  const collection = await getCollectionById(id);
+  const session = await auth();
+  const userId = session?.user?.id;
+  if (!userId) {
+    return { title: "Collection · DevStash" };
+  }
+
+  const collection = await getCollectionById(userId, id);
   return {
     title: collection
       ? `${collection.name} · DevStash`
@@ -36,9 +42,9 @@ async function CollectionContent({
   if (!session?.user?.id) redirect("/sign-in");
 
   const [collection, itemTypes, sidebarCollections] = await Promise.all([
-    getCollectionById(id),
+    getCollectionById(session.user.id, id),
     getSidebarItemTypes(),
-    getSidebarCollections(),
+    getSidebarCollections(session.user.id),
   ]);
 
   if (!collection) notFound();

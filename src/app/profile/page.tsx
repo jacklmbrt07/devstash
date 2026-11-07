@@ -21,7 +21,7 @@ async function ProfileContent() {
   const [profile, itemTypes, collections] = await Promise.all([
     getProfile(session.user.id),
     getSidebarItemTypes(),
-    getSidebarCollections(),
+    getSidebarCollections(session.user.id),
   ]);
 
   if (!profile) redirect("/sign-in");

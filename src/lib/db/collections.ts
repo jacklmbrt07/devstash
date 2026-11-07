@@ -1,11 +1,6 @@
-import { connection } from "next/server";
-import { cache } from "react";
-
+import type { CreateCollectionData } from "@/lib/collections/create-collection-input";
 import type { DashboardItem } from "@/lib/db/items";
 import { db } from "@/prisma/db";
-
-/** Stand-in until authentication selects the signed-in user. */
-const DEMO_USER_EMAIL = "demo@devstash.io";
 
 const RECENT_COLLECTION_LIMIT = 6;
 
@@ -66,16 +61,6 @@ export interface CollectionDetail {
 }
 
 const SIDEBAR_RECENT_LIMIT = 4;
-
-const getDemoUserId = cache(async (): Promise<string | null> => {
-  await connection();
-
-  const user = await db.orm.public.User.where({ email: DEMO_USER_EMAIL })
-    .select("id")
-    .first();
-
-  return user?.id ?? null;
-});
 
 function typeRank(name: string): number {
   const index = ITEM_TYPE_ORDER.indexOf(name as (typeof ITEM_TYPE_ORDER)[number]);
@@ -152,10 +137,10 @@ function toDashboardCollection(row: {
   };
 }
 
-async function listCollections(limit?: number): Promise<DashboardCollection[]> {
-  const userId = await getDemoUserId();
-  if (!userId) return [];
-
+async function listCollections(
+  userId: string,
+  limit?: number,
+): Promise<DashboardCollection[]> {
   let query = db.orm.public.Collection.where({ userId })
     .orderBy((collection) => collection.updatedAt.desc())
     .include("itemCollections", (links) =>
@@ -174,20 +159,22 @@ async function listCollections(limit?: number): Promise<DashboardCollection[]> {
   return rows.map(toDashboardCollection);
 }
 
-export async function getRecentCollections(): Promise<DashboardCollection[]> {
-  return listCollections(RECENT_COLLECTION_LIMIT);
+export async function getRecentCollections(
+  userId: string,
+): Promise<DashboardCollection[]> {
+  return listCollections(userId, RECENT_COLLECTION_LIMIT);
 }
 
-export async function getAllCollections(): Promise<DashboardCollection[]> {
-  return listCollections();
+export async function getAllCollections(
+  userId: string,
+): Promise<DashboardCollection[]> {
+  return listCollections(userId);
 }
 
 export async function getCollectionById(
+  userId: string,
   id: string,
 ): Promise<CollectionDetail | null> {
-  const userId = await getDemoUserId();
-  if (!userId) return null;
-
   const row = await db.orm.public.Collection.where({ id, userId })
     .include("itemCollections", (links) =>
       links.include("item", (item) =>
@@ -246,10 +233,9 @@ export async function getCollectionById(
   };
 }
 
-export async function getSidebarCollections(): Promise<SidebarCollections> {
-  const userId = await getDemoUserId();
-  if (!userId) return { favorites: [], recent: [] };
-
+export async function getSidebarCollections(
+  userId: string,
+): Promise<SidebarCollections> {
   const [favoriteRows, recentRows] = await Promise.all([
     db.orm.public.Collection.where({ userId, isFavorite: true })
       .orderBy((collection) => collection.updatedAt.desc())
@@ -284,10 +270,9 @@ export async function getSidebarCollections(): Promise<SidebarCollections> {
   };
 }
 
-export async function getCollectionStats(): Promise<CollectionStats> {
-  const userId = await getDemoUserId();
-  if (!userId) return { total: 0, favorites: 0 };
-
+export async function getCollectionStats(
+  userId: string,
+): Promise<CollectionStats> {
   const [{ total }, { total: favorites }] = await Promise.all([
     db.orm.public.Collection.where({ userId }).aggregate((agg) => ({
       total: agg.count(),
@@ -301,4 +286,26 @@ export async function getCollectionStats(): Promise<CollectionStats> {
   ]);
 
   return { total, favorites };
+}
+
+export async function createCollection(
+  userId: string,
+  data: CreateCollectionData,
+): Promise<DashboardCollection> {
+  const created = await db.orm.public.Collection.create({
+    name: data.name,
+    description: data.description,
+    userId,
+  });
+
+  return {
+    id: created.id,
+    name: created.name,
+    description: created.description,
+    isFavorite: created.isFavorite,
+    updatedAt: toIsoTimestamp(created.updatedAt),
+    itemCount: 0,
+    borderColor: null,
+    types: [],
+  };
 }

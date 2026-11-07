@@ -3,6 +3,7 @@ import Link from "next/link";
 import { Search } from "lucide-react";
 
 import { UserMenu } from "@/components/auth/user-menu";
+import { CreateCollectionDialog } from "@/components/collections/create-collection-dialog";
 import { CreateItemDialog } from "@/components/items/create-item-dialog";
 import { Input } from "@/components/ui/input";
 import type { SessionUser } from "@/types/session-user";
@@ -41,6 +42,7 @@ export function DashboardTopBar({ sidebarToggle, user }: DashboardTopBarProps) {
       </div>
 
       <div className="flex items-center gap-2">
+        <CreateCollectionDialog />
         <CreateItemDialog />
         <UserMenu user={user} />
       </div>

@@ -17,10 +17,14 @@ async function DashboardFrame({
 }: {
   children: ReactNode;
 }) {
-  const [session, itemTypes, collections] = await Promise.all([
-    auth(),
+  const session = await auth();
+  const userId = session?.user?.id;
+
+  const [itemTypes, collections] = await Promise.all([
     getSidebarItemTypes(),
-    getSidebarCollections(),
+    userId
+      ? getSidebarCollections(userId)
+      : Promise.resolve({ favorites: [], recent: [] }),
   ]);
 
   return (

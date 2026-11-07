@@ -39,7 +39,7 @@ async function ItemsContent({
   const [items, itemTypes, collections] = await Promise.all([
     getItemsByType(name),
     getSidebarItemTypes(),
-    getSidebarCollections(),
+    getSidebarCollections(session.user.id),
   ]);
 
   return (

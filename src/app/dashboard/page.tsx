@@ -1,4 +1,5 @@
 import { Suspense } from "react";
+import { redirect } from "next/navigation";
 
 import { auth } from "@/auth";
 import { DashboardMain } from "@/components/dashboard/dashboard-main";
@@ -9,17 +10,19 @@ import {
 import { getItemStats, getPinnedItems, getRecentItems } from "@/lib/db/items";
 
 async function DashboardContent() {
+  const session = await auth();
+  const userId = session?.user?.id;
+  if (!userId) redirect("/sign-in");
+
   const [
-    session,
     recentCollections,
     collectionStats,
     pinnedItems,
     recentItems,
     itemStats,
   ] = await Promise.all([
-    auth(),
-    getRecentCollections(),
-    getCollectionStats(),
+    getRecentCollections(userId),
+    getCollectionStats(userId),
     getPinnedItems(),
     getRecentItems(),
     getItemStats(),
@@ -32,7 +35,7 @@ async function DashboardContent() {
       pinnedItems={pinnedItems}
       recentItems={recentItems}
       itemStats={itemStats}
-      userName={session?.user?.name?.trim() || "there"}
+      userName={session.user?.name?.trim() || "there"}
     />
   );
 }

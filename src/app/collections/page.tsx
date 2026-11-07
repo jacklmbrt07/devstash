@@ -21,9 +21,9 @@ async function CollectionsContent() {
   if (!session?.user?.id) redirect("/sign-in");
 
   const [collections, itemTypes, sidebarCollections] = await Promise.all([
-    getAllCollections(),
+    getAllCollections(session.user.id),
     getSidebarItemTypes(),
-    getSidebarCollections(),
+    getSidebarCollections(session.user.id),
   ]);
 
   return (

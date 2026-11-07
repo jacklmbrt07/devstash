@@ -1,16 +1,24 @@
-# Current Feature
+# Current Feature: Collection Create
 
 ## Status
 
-Not Started
+In Progress
 
 ## Goals
 
-<!-- Feature goals -->
+- Add a top-bar button to create a new collection (name + description)
+- Follow the same patterns as items: user-scoped, server-component fetches via `lib/db`, API routes / actions for client-side mutations
+- Create button opens a modal with the required fields
+- Show a toast on success or failure
+- After save, UI updates so the new collection appears (e.g. `router.refresh()`)
 
 ## Notes
 
-<!-- Spec notes / constraints -->
+- Collections are user-scoped for reads and writes (session `userId` passed into `lib/db` helpers)
+- Mirror item create: Zod validation, session check, db helper in `src/lib/db/collections.ts`, create action, dialog in top bar
+- Fields: name (required), description (optional)
+- Do not implement edit/delete/favorites or add-items-to-collection in this feature
+- Item list queries still use the demo-user stand-in; only collections were switched to the signed-in user for this feature
 
 ## History
 
@@ -191,13 +199,6 @@ Not Started
 - Item cards sit in one column by default and two columns from the medium breakpoint up
 - Each card's left border uses the item type color
 - Signed-out visits redirect to `/sign-in`; a type with no items shows an empty state
-
-### Items list three columns
-
-- `/items/[type]` item cards stay in one column on small screens
-- Two columns from the medium breakpoint
-- Three columns from the large breakpoint (`lg`)
-- Spacing, empty state, type border, and the rest of the page stay the same
 
 ### Item Drawer
 
