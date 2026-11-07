@@ -1,37 +1,12 @@
-# Current Feature: File Upload with Cloudflare R2
+# Current Feature
 
 ## Status
 
-Complete
+Not Started
 
 ## Goals
 
-- Create upload API route for R2
-- Stick to lib/db/items.ts for prisma/db functions
-- Create FileUpload component with drag-and-drop
-- Update create item modal to use FileUpload for file/image types
-- Delete files from R2 when items are deleted
-- Create download proxy API route (avoids CORS issues)
-- Add download button in ItemDrawer for file types
-- Show upload progress indicator
-- Display image preview for images, file info for files
-
 ## Notes
-
-Source: `context/features/file-image-spec.md`
-
-### File Constraints
-
-| Type   | Max Size | Extensions                                            |
-| ------ | -------- | ----------------------------------------------------- |
-| Images | 5 MB     | `.png`, `.jpg`, `.jpeg`, `.gif`, `.webp`, `.svg`      |
-| Files  | 10 MB    | `.pdf`, `.txt`, `.md`, `.json`, `.yaml`, `.yml`, `.xml`, `.csv`, `.toml`, `.ini` |
-
-### MIME Types
-
-**Images:** `image/png`, `image/jpeg`, `image/gif`, `image/webp`, `image/svg+xml`
-
-**Files:** `application/pdf`, `text/plain`, `text/markdown`, `application/json`, `application/x-yaml` / `text/yaml`, `application/xml` / `text/xml`, `text/csv`, `application/toml`, `text/plain` (for `.ini`)
 
 ## History
 
@@ -269,3 +244,12 @@ Source: `context/features/file-image-spec.md`
 - Readonly mode shows Preview only; edit mode defaults to Write
 - Snippets and commands stay on `CodeEditor`; Field wrappers no longer use `<label>` around editors so clicks type instead of copying
 - `/collections` and `/collections/[id]` pages list collections and their items so dashboard and sidebar links no longer 404
+
+### File Upload with Cloudflare R2
+
+- Upload API stores objects in R2 and returns `fileUrl`, `fileName`, and `fileSize`
+- Download proxy streams files for the signed-in owner to avoid CORS issues
+- `FileUpload` supports drag-and-drop, progress, image preview, and file info
+- Create dialog adds file and image types with the shared upload component
+- Deleting an item also removes its R2 object; the drawer shows a download action for file types
+- DB writes stay in `src/lib/db/items.ts`; validation helpers live in `src/lib/items/file-upload.ts`
