@@ -1,23 +1,12 @@
-# Current Feature: File List View
+# Current Feature
 
 ## Status
 
-In Progress
+Not Started
 
 ## Goals
 
-- Update `/items/files` and `/items/images` to use a single-column list layout (Google Drive/Dropbox style) instead of grid cards
-- Each row shows: file icon (by extension), file name, file size, upload date, and download button
-- Row hover highlight
-- Clicking a row opens ItemDrawer
-- Download button triggers direct download and stops propagation
-- Responsive: stack info vertically on mobile
-
 ## Notes
-
-- Spec: `context/features/file-display-spec.md`
-- Scope is files and images item types only; other types keep the existing card grid
-- List should feel like a file manager: icon + metadata columns + download affordance
 
 ## History
 
@@ -264,3 +253,11 @@ In Progress
 - Create dialog adds file and image types with the shared upload component
 - Deleting an item also removes its R2 object; the drawer shows a download action for file types
 - DB writes stay in `src/lib/db/items.ts`; validation helpers live in `src/lib/items/file-upload.ts`
+
+### File List View
+
+- `/items/files` and `/items/images` use a single-column list instead of the card grid
+- Each row shows an extension-based icon, file name, size, upload date, and download button
+- Row click opens ItemDrawer; download stops propagation and hits `/api/download/[id]`
+- Mobile stacks name, size, and date vertically; other item types keep the card grid
+- Helpers live in `src/lib/items/file-display.ts` with Vitest coverage; `DashboardItem` includes file metadata
