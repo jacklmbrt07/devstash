@@ -1,16 +1,23 @@
-# Current Feature
+# Current Feature: Collections Pages
 
 ## Status
 
-Not Started
+Complete
 
 ## Goals
 
-<!-- Feature goals -->
+- Create the `/collections` page that lists the signed-in user's collections
+- Create the `/collections/[id]` page that shows the items in that collection
+- Reuse the existing collection and item cards
+- Link "View all collections" in the sidebar to `/collections`
+- Link all collection cards to their `/collections/[id]` page
 
 ## Notes
 
-<!-- Spec notes / constraints -->
+- Follow existing dashboard patterns: server components fetch via `lib/db`, session-scoped data
+- Use existing cards rather than inventing new card UIs
+- Collection create and add-items-to-collections are already done; this feature is display/navigation only
+- Do not implement collection edit/delete/favorite yet (separate prompt)
 
 ## History
 
