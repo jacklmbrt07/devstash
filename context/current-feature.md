@@ -1,22 +1,16 @@
-# Current Feature: Pagination
+# Current Feature
 
 ## Status
 
-In Progress
+Not Started
 
 ## Goals
 
-- Add pagination to `/items/[type]` and `/collections/[id]` pages
-- Pagination controls at bottom with page numbers and prev/next links
-- Disable (grey out) prev/next when not available
-- Use constants: `ITEMS_PER_PAGE = 21`, `COLLECTIONS_PER_PAGE = 21`
-- Dashboard limits: `DASHBOARD_COLLECTIONS_LIMIT = 6`, `DASHBOARD_RECENT_ITEMS_LIMIT = 10`
-- Do not fetch all resources at once — only fetch the amount that a page requires
+<!-- Feature goals -->
 
 ## Notes
 
-- Numbered page links for items and collections listings
-- Spec: `context/features/pagination-spec.md`
+<!-- Spec notes / constraints -->
 
 ## History
 
@@ -326,3 +320,11 @@ In Progress
 - Client-side fuzzy filtering groups Items (type icon + content preview) and Collections (item count)
 - Selecting an item opens the item drawer; selecting a collection goes to `/collections/[id]`
 - TopBar placeholder shows a ⌘K or Ctrl+K hint by platform
+
+### Pagination
+
+- `/items/[type]` and `/collections/[id]` paginate with `?page=` and page-sized Prisma `limit`/`offset` fetches
+- Bottom controls show page numbers plus prev/next, greyed when unavailable
+- Page sizes: `ITEMS_PER_PAGE` and `COLLECTIONS_PER_PAGE` = 21
+- Dashboard caps use `DASHBOARD_COLLECTIONS_LIMIT` = 6 and `DASHBOARD_RECENT_ITEMS_LIMIT` = 10
+- Helpers and Vitest coverage live in `src/lib/pagination.ts` and the DB pagination test files
