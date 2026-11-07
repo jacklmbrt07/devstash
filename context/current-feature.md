@@ -1,22 +1,16 @@
-# Current Feature: Settings Page
+# Current Feature
 
 ## Status
 
-In Progress
+Not Started
 
 ## Goals
 
-- Create a protected `/settings` page rendered in the dashboard shell
-- Add a Settings link in the user icon dropdown at the bottom of the sidebar
-- Move Account actions (delete account and forgot password) from `/profile` to `/settings`
-- Keep profile focused on identity, usage stats, and password change for credentials accounts
+<!-- Feature goals -->
 
 ## Notes
 
-- URL must be `/settings` and require authentication (same protection pattern as `/profile` and `/dashboard`)
-- Sidebar user dropdown currently has Sign out; Settings should be added there
-- "Forgot password" on the profile likely means the password-reset / change-password flow that lives under Account actions — confirm against the profile page before moving
-- Delete account confirmation dialog should move with the Account actions section
+<!-- Spec notes / constraints -->
 
 ## History
 
@@ -311,3 +305,10 @@ In Progress
 - Delete confirms, then removes the collection only; items stay and are unlinked via cascade on join rows
 - Collection cards on `/collections` and the dashboard use a 3-dots menu for Edit, Delete, and Favorite
 - Card body still navigates to `/collections/[id]`; the menu sits outside the link
+
+### Settings Page
+
+- Protected `/settings` page renders in the dashboard shell and is covered by the auth proxy matcher
+- Sidebar user dropdown includes a Settings link above Sign out
+- Delete account moved from profile Account actions to the settings page
+- Profile keeps identity, usage stats, and change password for email accounts
