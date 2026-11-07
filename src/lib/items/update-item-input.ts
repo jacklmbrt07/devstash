@@ -25,6 +25,10 @@ function uniqueTags(tags: string[]): string[] {
   });
 }
 
+function uniqueIds(ids: string[]): string[] {
+  return [...new Set(ids)];
+}
+
 export const updateItemSchema = z.object({
   title: z.string().trim().min(1, "Title is required"),
   description: nullableText,
@@ -34,6 +38,10 @@ export const updateItemSchema = z.object({
   tags: z
     .array(z.string().trim().min(1, "Tags can't be empty"))
     .transform(uniqueTags),
+  collectionIds: z
+    .array(z.string().trim().min(1, "Collection id can't be empty"))
+    .default([])
+    .transform(uniqueIds),
 });
 
 export type UpdateItemData = z.infer<typeof updateItemSchema>;

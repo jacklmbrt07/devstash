@@ -42,12 +42,20 @@ function uniqueTags(tags: string[]): string[] {
   });
 }
 
+function uniqueIds(ids: string[]): string[] {
+  return [...new Set(ids)];
+}
+
 const sharedFields = {
   title: z.string().trim().min(1, "Title is required"),
   description: nullableText,
   tags: z
     .array(z.string().trim().min(1, "Tags can't be empty"))
     .transform(uniqueTags),
+  collectionIds: z
+    .array(z.string().trim().min(1, "Collection id can't be empty"))
+    .default([])
+    .transform(uniqueIds),
 };
 
 const textItem = z.object({

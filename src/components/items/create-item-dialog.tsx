@@ -5,7 +5,9 @@ import { useRouter } from "next/navigation";
 import { Plus } from "lucide-react";
 import { toast } from "sonner";
 
+import { listCollectionOptions } from "@/actions/collections";
 import { createItem } from "@/actions/items";
+import { CollectionMultiSelect } from "@/components/collections/collection-multi-select";
 import { CodeEditor, isCodeItemType } from "@/components/items/code-editor";
 import {
   FileUpload,
@@ -27,6 +29,7 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import type { CollectionOption } from "@/lib/db/collections";
 import { languageSelectOptions } from "@/lib/items/code-editor";
 import {
   CREATABLE_ITEM_TYPES,
@@ -73,6 +76,7 @@ const emptyForm = {
   title: "",
   description: "",
   tags: "",
+  collectionIds: [] as string[],
   content: "",
   language: "",
   url: "",
@@ -85,6 +89,10 @@ export function CreateItemDialog() {
   const [form, setForm] = useState(emptyForm);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [collectionOptions, setCollectionOptions] = useState<CollectionOption[]>(
+    [],
+  );
+  const [collectionsLoading, setCollectionsLoading] = useState(false);
 
   const showContent = CONTENT_TYPES.has(form.type);
   const showLanguage = LANGUAGE_TYPES.has(form.type);
@@ -105,12 +113,31 @@ export function CreateItemDialog() {
     setForm(emptyForm);
     setError(null);
     setSaving(false);
+    setCollectionOptions([]);
+    setCollectionsLoading(false);
+  }
+
+  async function loadCollections() {
+    setCollectionsLoading(true);
+    const result = await listCollectionOptions();
+    if (!result.success) {
+      toast.error(result.error ?? "Couldn't load collections");
+      setCollectionOptions([]);
+      setCollectionsLoading(false);
+      return;
+    }
+    setCollectionOptions(result.data);
+    setCollectionsLoading(false);
   }
 
   function handleOpenChange(next: boolean) {
     if (saving) return;
     setOpen(next);
-    if (!next) reset();
+    if (!next) {
+      reset();
+      return;
+    }
+    void loadCollections();
   }
 
   async function save() {
@@ -123,6 +150,7 @@ export function CreateItemDialog() {
       title: form.title,
       description: form.description,
       tags: tagList(form.tags),
+      collectionIds: form.collectionIds,
       ...(showContent ? { content: form.content } : {}),
       ...(showLanguage ? { language: form.language } : {}),
       ...(showUrl ? { url: form.url } : {}),
@@ -219,6 +247,16 @@ export function CreateItemDialog() {
               onChange={(event) => update("tags", event.target.value)}
               placeholder="utils, typescript"
               disabled={saving}
+            />
+          </Field>
+
+          <Field label="Collections">
+            <CollectionMultiSelect
+              options={collectionOptions}
+              value={form.collectionIds}
+              onChange={(collectionIds) => update("collectionIds", collectionIds)}
+              disabled={saving}
+              loading={collectionsLoading}
             />
           </Field>
 

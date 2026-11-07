@@ -101,6 +101,7 @@ describe("updateItem", () => {
       url: null,
       language: null,
       tags: ["a"],
+      collectionIds: [],
     });
   });
 

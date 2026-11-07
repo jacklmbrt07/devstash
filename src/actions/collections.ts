@@ -3,6 +3,8 @@
 import { auth } from "@/auth";
 import {
   createCollection as insertCollection,
+  getCollectionOptions,
+  type CollectionOption,
   type DashboardCollection,
 } from "@/lib/db/collections";
 import { createCollectionSchema } from "@/lib/collections/create-collection-input";
@@ -11,6 +13,36 @@ export interface CreateCollectionResult {
   success: boolean;
   data: DashboardCollection | null;
   error: string | null;
+}
+
+export interface ListCollectionOptionsResult {
+  success: boolean;
+  data: CollectionOption[];
+  error: string | null;
+}
+
+export async function listCollectionOptions(): Promise<ListCollectionOptionsResult> {
+  const session = await auth();
+  const userId = session?.user?.id;
+  if (!userId) {
+    return {
+      success: false,
+      data: [],
+      error: "Sign in to load collections",
+    };
+  }
+
+  try {
+    const options = await getCollectionOptions(userId);
+    return { success: true, data: options, error: null };
+  } catch (error) {
+    console.error("Collection options failed:", error);
+    return {
+      success: false,
+      data: [],
+      error: "Couldn't load collections",
+    };
+  }
 }
 
 export async function createCollection(

@@ -231,6 +231,29 @@ async function replaceItemTags(itemId: string, names: string[]) {
   }
 }
 
+async function replaceItemCollections(
+  userId: string,
+  itemId: string,
+  collectionIds: string[],
+) {
+  if (collectionIds.length > 0) {
+    const owned = await db.orm.public.Collection.where({ userId })
+      .select("id")
+      .all();
+    const ownedIds = new Set(owned.map((collection) => collection.id));
+    const invalid = collectionIds.some((id) => !ownedIds.has(id));
+    if (invalid) {
+      throw new Error("One or more collections were not found");
+    }
+  }
+
+  await db.orm.public.ItemCollection.where({ itemId }).deleteAll();
+
+  for (const collectionId of collectionIds) {
+    await db.orm.public.ItemCollection.create({ itemId, collectionId });
+  }
+}
+
 export async function deleteItem(
   userId: string,
   itemId: string,
@@ -319,6 +342,7 @@ export async function createItem(
   });
 
   await replaceItemTags(created.id, data.tags);
+  await replaceItemCollections(userId, created.id, data.collectionIds);
   return findItemDetail(userId, created.id);
 }
 
@@ -340,6 +364,7 @@ export async function updateItem(
   if (!updated) return null;
 
   await replaceItemTags(itemId, data.tags);
+  await replaceItemCollections(userId, itemId, data.collectionIds);
   return findItemDetail(userId, itemId);
 }
 

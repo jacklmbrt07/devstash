@@ -2,6 +2,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 
 const auth = vi.hoisted(() => vi.fn());
 const insertCollection = vi.hoisted(() => vi.fn());
+const loadCollectionOptions = vi.hoisted(() => vi.fn());
 
 vi.mock("@/auth", () => ({
   auth,
@@ -9,9 +10,10 @@ vi.mock("@/auth", () => ({
 
 vi.mock("@/lib/db/collections", () => ({
   createCollection: insertCollection,
+  getCollectionOptions: loadCollectionOptions,
 }));
 
-import { createCollection } from "./collections";
+import { createCollection, listCollectionOptions } from "./collections";
 
 const collection = {
   id: "col-1",
@@ -33,6 +35,7 @@ describe("createCollection", () => {
   afterEach(() => {
     auth.mockReset();
     insertCollection.mockReset();
+    loadCollectionOptions.mockReset();
     vi.restoreAllMocks();
   });
 
@@ -95,5 +98,38 @@ describe("createCollection", () => {
       error: "Couldn't create this collection",
     });
     expect(consoleError).toHaveBeenCalled();
+  });
+});
+
+describe("listCollectionOptions", () => {
+  afterEach(() => {
+    auth.mockReset();
+    loadCollectionOptions.mockReset();
+    vi.restoreAllMocks();
+  });
+
+  it("requires a signed-in user", async () => {
+    auth.mockResolvedValue(null);
+
+    await expect(listCollectionOptions()).resolves.toEqual({
+      success: false,
+      data: [],
+      error: "Sign in to load collections",
+    });
+    expect(loadCollectionOptions).not.toHaveBeenCalled();
+  });
+
+  it("returns collection options for the signed-in user", async () => {
+    auth.mockResolvedValue({ user: { id: "user-1" } });
+    loadCollectionOptions.mockResolvedValue([
+      { id: "col-1", name: "React Patterns" },
+    ]);
+
+    await expect(listCollectionOptions()).resolves.toEqual({
+      success: true,
+      data: [{ id: "col-1", name: "React Patterns" }],
+      error: null,
+    });
+    expect(loadCollectionOptions).toHaveBeenCalledWith("user-1");
   });
 });

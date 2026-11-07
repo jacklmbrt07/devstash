@@ -1,16 +1,24 @@
-# Current Feature
+# Current Feature: Add Items To Collections
 
 ## Status
 
-Not Started
+In Progress
 
 ## Goals
 
-<!-- Feature goals -->
+- Add an item to a single collection or multiple collections
+- Add a collection multi-select input to the new item form
+- Add the same collection multi-select to the edit item form
+- Persist selected collection membership when creating or updating an item
+- Do not build collection pages or collection browsing UI in this feature
 
 ## Notes
 
-<!-- Spec notes / constraints -->
+- Follow existing item create/edit patterns (actions, Zod validation, `lib/db` queries)
+- Collections are many-to-many with items; selection should support zero, one, or many
+- Available collections should come from the signed-in user's collections
+- Toast / refresh behavior should stay consistent with current create and edit flows
+
 
 ## History
 

@@ -21,8 +21,19 @@ describe("createItemSchema link URLs", () => {
       title: "Lucide icons",
       description: null,
       tags: ["icons", "ui"],
+      collectionIds: [],
       url: "https://lucide.dev/icons/",
     });
+  });
+
+  it("keeps unique collection ids", () => {
+    const parsed = createItemSchema.parse({
+      ...linkBase,
+      url: "https://lucide.dev/icons/",
+      collectionIds: ["col-1", "col-2", "col-1"],
+    });
+
+    expect(parsed.collectionIds).toEqual(["col-1", "col-2"]);
   });
 
   it("rejects a missing URL", () => {

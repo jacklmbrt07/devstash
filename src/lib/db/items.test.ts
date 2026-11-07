@@ -9,6 +9,9 @@ const tagWhere = vi.hoisted(() => vi.fn());
 const tagFirst = vi.hoisted(() => vi.fn());
 const tagCreate = vi.hoisted(() => vi.fn());
 const linkTag = vi.hoisted(() => vi.fn());
+const collectionAll = vi.hoisted(() => vi.fn());
+const deleteItemCollections = vi.hoisted(() => vi.fn());
+const linkCollection = vi.hoisted(() => vi.fn());
 
 vi.mock("next/server", () => ({
   connection: vi.fn(async () => undefined),
@@ -62,6 +65,19 @@ vi.mock("@/prisma/db", () => ({
             deleteAll: deleteItemTags,
           }),
           create: linkTag,
+        },
+        Collection: {
+          where: () => ({
+            select: () => ({
+              all: collectionAll,
+            }),
+          }),
+        },
+        ItemCollection: {
+          where: () => ({
+            deleteAll: deleteItemCollections,
+          }),
+          create: linkCollection,
         },
       },
     },
@@ -185,6 +201,7 @@ const savedFields = {
   url: null,
   language: "typescript",
   tags: ["utils", "typescript"],
+  collectionIds: ["col-1", "col-2"],
 };
 
 describe("updateItem", () => {
@@ -197,6 +214,9 @@ describe("updateItem", () => {
     tagCreate.mockReset();
     linkTag.mockReset();
     itemFirst.mockReset();
+    collectionAll.mockReset();
+    deleteItemCollections.mockReset();
+    linkCollection.mockReset();
   });
 
   it("does not replace tags when the user does not own the item", async () => {
@@ -206,12 +226,14 @@ describe("updateItem", () => {
     expect(itemWhere).toHaveBeenCalledWith({ id: "item-1", userId: "user-1" });
     expect(deleteItemTags).not.toHaveBeenCalled();
     expect(linkTag).not.toHaveBeenCalled();
+    expect(deleteItemCollections).not.toHaveBeenCalled();
   });
 
-  it("replaces tags by reusing an existing name and creating a missing one", async () => {
+  it("replaces tags and collections for an owned item", async () => {
     itemUpdate.mockResolvedValue({ id: "item-1" });
     tagFirst.mockResolvedValueOnce({ id: "tag-utils" }).mockResolvedValueOnce(null);
     tagCreate.mockResolvedValue({ id: "tag-ts", name: "typescript" });
+    collectionAll.mockResolvedValue([{ id: "col-1" }, { id: "col-2" }]);
     itemFirst.mockResolvedValue({
       id: "item-1",
       title: "Hello",
@@ -229,12 +251,19 @@ describe("updateItem", () => {
       updatedAt: "2026-11-06T12:00:00.000Z",
       itemType: { name: "snippet", color: "#3b82f6" },
       itemTags: [{ tag: { name: "utils" } }, { tag: { name: "typescript" } }],
-      itemCollections: [],
+      itemCollections: [
+        { collection: { id: "col-1", name: "React Patterns" } },
+        { collection: { id: "col-2", name: "Utils" } },
+      ],
     });
 
     await expect(updateItem("user-1", "item-1", savedFields)).resolves.toMatchObject({
       title: "Hello",
       tags: ["utils", "typescript"],
+      collections: [
+        { id: "col-1", name: "React Patterns" },
+        { id: "col-2", name: "Utils" },
+      ],
     });
     expect(itemUpdate).toHaveBeenCalledWith({
       title: "Hello",
@@ -250,5 +279,26 @@ describe("updateItem", () => {
     expect(tagCreate).toHaveBeenCalledWith({ name: "typescript" });
     expect(linkTag).toHaveBeenNthCalledWith(1, { a: "item-1", b: "tag-utils" });
     expect(linkTag).toHaveBeenNthCalledWith(2, { a: "item-1", b: "tag-ts" });
+    expect(deleteItemCollections).toHaveBeenCalledOnce();
+    expect(linkCollection).toHaveBeenNthCalledWith(1, {
+      itemId: "item-1",
+      collectionId: "col-1",
+    });
+    expect(linkCollection).toHaveBeenNthCalledWith(2, {
+      itemId: "item-1",
+      collectionId: "col-2",
+    });
+  });
+
+  it("rejects collection ids the user does not own", async () => {
+    itemUpdate.mockResolvedValue({ id: "item-1" });
+    tagFirst.mockResolvedValue({ id: "tag-utils" });
+    collectionAll.mockResolvedValue([{ id: "col-1" }]);
+
+    await expect(updateItem("user-1", "item-1", savedFields)).rejects.toThrow(
+      "One or more collections were not found",
+    );
+    expect(deleteItemCollections).not.toHaveBeenCalled();
+    expect(linkCollection).not.toHaveBeenCalled();
   });
 });

@@ -40,6 +40,11 @@ export interface SidebarCollection {
   name: string;
 }
 
+export interface CollectionOption {
+  id: string;
+  name: string;
+}
+
 export interface SidebarRecentCollection extends SidebarCollection {
   accentColor: string | null;
 }
@@ -169,6 +174,17 @@ export async function getAllCollections(
   userId: string,
 ): Promise<DashboardCollection[]> {
   return listCollections(userId);
+}
+
+export async function getCollectionOptions(
+  userId: string,
+): Promise<CollectionOption[]> {
+  const rows = await db.orm.public.Collection.where({ userId })
+    .orderBy((collection) => collection.name.asc())
+    .select("id", "name")
+    .all();
+
+  return rows.map((row) => ({ id: row.id, name: row.name }));
 }
 
 export async function getCollectionById(

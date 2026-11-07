@@ -1,10 +1,12 @@
 "use client";
 
-import { useState, type ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 
+import { listCollectionOptions } from "@/actions/collections";
 import { updateItem } from "@/actions/items";
+import { CollectionMultiSelect } from "@/components/collections/collection-multi-select";
 import { CodeEditor, isCodeItemType } from "@/components/items/code-editor";
 import {
   MarkdownEditor,
@@ -22,6 +24,7 @@ import {
   getItemTypeLabel,
   ITEM_TYPE_ICONS,
 } from "@/lib/constants/item-types";
+import type { CollectionOption } from "@/lib/db/collections";
 import type { ItemDetail } from "@/lib/db/items";
 import { formatAbsoluteDate } from "@/lib/format-relative-time";
 import { languageSelectOptions } from "@/lib/items/code-editor";
@@ -73,11 +76,18 @@ export function ItemDrawerEditor({
   const [title, setTitle] = useState(item.title);
   const [description, setDescription] = useState(item.description ?? "");
   const [tags, setTags] = useState(item.tags.join(", "));
+  const [collectionIds, setCollectionIds] = useState(
+    item.collections.map((collection) => collection.id),
+  );
   const [content, setContent] = useState(item.content ?? "");
   const [language, setLanguage] = useState(item.language ?? "");
   const [url, setUrl] = useState(item.url ?? "");
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [collectionOptions, setCollectionOptions] = useState<CollectionOption[]>(
+    [],
+  );
+  const [collectionsLoading, setCollectionsLoading] = useState(true);
 
   const Icon = ITEM_TYPE_ICONS[item.typeName];
   const typeLabel = singularTypeLabel(item.typeName);
@@ -85,6 +95,26 @@ export function ItemDrawerEditor({
   const showLanguage = LANGUAGE_TYPES.has(item.typeName);
   const showUrl = item.typeName === "link";
   const titleMissing = title.trim().length === 0;
+
+  useEffect(() => {
+    let cancelled = false;
+
+    void listCollectionOptions().then((result) => {
+      if (cancelled) return;
+      if (!result.success) {
+        toast.error(result.error ?? "Couldn't load collections");
+        setCollectionOptions([]);
+        setCollectionsLoading(false);
+        return;
+      }
+      setCollectionOptions(result.data);
+      setCollectionsLoading(false);
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   async function save() {
     if (titleMissing || saving) return;
@@ -98,6 +128,7 @@ export function ItemDrawerEditor({
       language,
       url,
       tags: tagList(tags),
+      collectionIds,
     });
 
     if (!result.success || !result.data) {
@@ -167,6 +198,16 @@ export function ItemDrawerEditor({
         />
       </Field>
 
+      <Field label="Collections">
+        <CollectionMultiSelect
+          options={collectionOptions}
+          value={collectionIds}
+          onChange={setCollectionIds}
+          disabled={saving}
+          loading={collectionsLoading}
+        />
+      </Field>
+
       {showLanguage ? (
         <Field label="Language">
           <select
@@ -221,24 +262,6 @@ export function ItemDrawerEditor({
             />
           )}
         </Field>
-      ) : null}
-
-      {item.collections.length > 0 ? (
-        <div className="flex flex-col gap-2">
-          <h3 className="text-xs font-medium tracking-wide text-muted-foreground uppercase">
-            Collections
-          </h3>
-          <div className="flex flex-wrap gap-1.5">
-            {item.collections.map((collection) => (
-              <span
-                key={collection.id}
-                className="rounded-md bg-muted px-2 py-0.5 text-xs font-normal text-muted-foreground"
-              >
-                {collection.name}
-              </span>
-            ))}
-          </div>
-        </div>
       ) : null}
 
       {item.fileName ? (

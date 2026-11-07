@@ -20,7 +20,17 @@ describe("updateItemSchema", () => {
       url: null,
       language: "typescript",
       tags: ["utils", "typescript"],
+      collectionIds: [],
     });
+  });
+
+  it("keeps unique collection ids", () => {
+    const parsed = updateItemSchema.parse({
+      ...validInput,
+      collectionIds: ["col-1", "col-2", "col-1"],
+    });
+
+    expect(parsed.collectionIds).toEqual(["col-1", "col-2"]);
   });
 
   it("keeps a valid URL", () => {
