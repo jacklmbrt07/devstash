@@ -1,5 +1,6 @@
 import { CollectionDetailActions } from "@/components/collections/collection-detail-actions";
 import { ItemCard } from "@/components/items/item-card";
+import { Pagination } from "@/components/ui/pagination";
 import {
   getItemTypeLabel,
   ITEM_TYPE_ICONS,
@@ -12,7 +13,8 @@ export function CollectionDetailView({
 }: {
   collection: CollectionDetail;
 }) {
-  const countLabel = collection.items.length === 1 ? "item" : "items";
+  const countLabel = collection.itemTotal === 1 ? "item" : "items";
+  const pathname = `/collections/${collection.id}`;
 
   return (
     <div className="mx-auto flex w-full max-w-6xl flex-col gap-6">
@@ -35,7 +37,7 @@ export function CollectionDetailView({
         ) : null}
         <div className="flex flex-wrap items-center gap-3 text-sm text-muted-foreground">
           <p>
-            <span className="tabular-nums">{collection.items.length}</span>{" "}
+            <span className="tabular-nums">{collection.itemTotal}</span>{" "}
             {countLabel} · Updated{" "}
             {formatRelativeTime(collection.updatedAt, new Date())}
           </p>
@@ -72,6 +74,11 @@ export function CollectionDetailView({
           No items in this collection yet.
         </p>
       )}
+      <Pagination
+        pathname={pathname}
+        page={collection.page}
+        totalPages={collection.totalPages}
+      />
     </div>
   );
 }

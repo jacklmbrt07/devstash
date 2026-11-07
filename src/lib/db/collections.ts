@@ -2,10 +2,10 @@ import type {
   CreateCollectionData,
   UpdateCollectionData,
 } from "@/lib/collections/create-collection-input";
+import { DASHBOARD_COLLECTIONS_LIMIT } from "@/lib/constants/pagination";
 import type { DashboardItem } from "@/lib/db/items";
+import { getPaginationState } from "@/lib/pagination";
 import { db } from "@/prisma/db";
-
-const RECENT_COLLECTION_LIMIT = 6;
 
 const ITEM_TYPE_ORDER = [
   "snippet",
@@ -66,6 +66,10 @@ export interface CollectionDetail {
   borderColor: string | null;
   types: CollectionTypeSummary[];
   items: DashboardItem[];
+  itemTotal: number;
+  page: number;
+  pageSize: number;
+  totalPages: number;
 }
 
 const SIDEBAR_RECENT_LIMIT = 4;
@@ -170,7 +174,7 @@ async function listCollections(
 export async function getRecentCollections(
   userId: string,
 ): Promise<DashboardCollection[]> {
-  return listCollections(userId, RECENT_COLLECTION_LIMIT);
+  return listCollections(userId, DASHBOARD_COLLECTIONS_LIMIT);
 }
 
 export async function getAllCollections(
@@ -190,55 +194,85 @@ export async function getCollectionOptions(
   return rows.map((row) => ({ id: row.id, name: row.name }));
 }
 
+export async function getCollectionName(
+  userId: string,
+  id: string,
+): Promise<string | null> {
+  const row = await db.orm.public.Collection.where({ id, userId })
+    .select("name")
+    .first();
+  return row?.name ?? null;
+}
+
 export async function getCollectionById(
   userId: string,
   id: string,
+  page: number,
+  pageSize: number,
 ): Promise<CollectionDetail | null> {
   const row = await db.orm.public.Collection.where({ id, userId })
-    .include("itemCollections", (links) =>
-      links.include("item", (item) =>
-        item
-          .include("itemType", (itemType) => itemType.select("name", "color"))
-          .include("itemTags", (tags) =>
-            tags.include("tag", (tag) => tag.select("name")),
-          ),
-      ),
-    )
+    .select("id", "name", "description", "isFavorite", "updatedAt")
     .first();
 
   if (!row) return null;
 
-  const types = collectionTypeSummaries(row.itemCollections);
-  const summary = summarizeCollectionTypes(types);
-
-  const items: DashboardItem[] = row.itemCollections
-    .flatMap((link) => {
-      const item = link.item;
-      if (!item) return [];
-      return [
-        {
-          id: item.id,
-          title: item.title,
-          description: item.description,
-          isFavorite: item.isFavorite,
-          isPinned: item.isPinned,
-          fileUrl: item.fileUrl,
-          fileName: item.fileName,
-          fileSize: item.fileSize,
-          createdAt: toIsoTimestamp(item.createdAt),
-          updatedAt: toIsoTimestamp(item.updatedAt),
-          typeName: item.itemType?.name ?? "item",
-          typeColor: item.itemType?.color ?? "#6b7280",
-          tags: item.itemTags.flatMap((tagLink) =>
-            tagLink.tag?.name ? [tagLink.tag.name] : [],
-          ),
-        },
-      ];
-    })
-    .sort(
-      (a, b) =>
-        new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime(),
+  const collectionItems = () =>
+    db.orm.public.Item.where((item) =>
+      item.itemCollections.some((link) => link.collectionId.eq(id)),
     );
+
+  const { total } = await collectionItems().aggregate((agg) => ({
+    total: agg.count(),
+  }));
+  const pagination = getPaginationState(page, pageSize, total);
+
+  const [typeCounts, systemTypes, itemRows] = await Promise.all([
+    collectionItems()
+      .groupBy("itemTypeId")
+      .aggregate((agg) => ({ total: agg.count() })),
+    db.orm.public.ItemType.where({ isSystem: true })
+      .select("id", "name", "color")
+      .all(),
+    collectionItems()
+      .orderBy((item) => item.updatedAt.desc())
+      .limit(pagination.pageSize)
+      .offset(pagination.offset)
+      .include("itemType", (itemType) => itemType.select("name", "color"))
+      .include("itemTags", (tags) =>
+        tags.include("tag", (tag) => tag.select("name")),
+      )
+      .all(),
+  ]);
+
+  const typeById = new Map(systemTypes.map((type) => [type.id, type]));
+  const rankedTypes = typeCounts
+    .flatMap((row) => {
+      const type = typeById.get(row.itemTypeId);
+      if (!type) return [];
+      return [{ name: type.name, color: type.color, count: row.total }];
+    })
+    .sort((a, b) => {
+      if (b.count !== a.count) return b.count - a.count;
+      return typeRank(a.name) - typeRank(b.name);
+    });
+
+  const items: DashboardItem[] = itemRows.map((item) => ({
+    id: item.id,
+    title: item.title,
+    description: item.description,
+    isFavorite: item.isFavorite,
+    isPinned: item.isPinned,
+    fileUrl: item.fileUrl,
+    fileName: item.fileName,
+    fileSize: item.fileSize,
+    createdAt: toIsoTimestamp(item.createdAt),
+    updatedAt: toIsoTimestamp(item.updatedAt),
+    typeName: item.itemType?.name ?? "item",
+    typeColor: item.itemType?.color ?? "#6b7280",
+    tags: item.itemTags.flatMap((tagLink) =>
+      tagLink.tag?.name ? [tagLink.tag.name] : [],
+    ),
+  }));
 
   return {
     id: row.id,
@@ -246,9 +280,13 @@ export async function getCollectionById(
     description: row.description,
     isFavorite: row.isFavorite,
     updatedAt: toIsoTimestamp(row.updatedAt),
-    borderColor: summary.borderColor,
-    types: summary.types,
+    borderColor: rankedTypes[0]?.color ?? null,
+    types: rankedTypes.map(({ name, color }) => ({ name, color })),
     items,
+    itemTotal: pagination.total,
+    page: pagination.page,
+    pageSize: pagination.pageSize,
+    totalPages: pagination.totalPages,
   };
 }
 

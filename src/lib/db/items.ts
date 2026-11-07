@@ -1,14 +1,14 @@
 import { connection } from "next/server";
 import { cache } from "react";
 
+import { DASHBOARD_RECENT_ITEMS_LIMIT } from "@/lib/constants/pagination";
 import type { CreateItemData } from "@/lib/items/create-item-input";
 import type { UpdateItemData } from "@/lib/items/update-item-input";
+import { getPaginationState } from "@/lib/pagination";
 import { db } from "@/prisma/db";
 
 /** Stand-in until authentication selects the signed-in user. */
 const DEMO_USER_EMAIL = "demo@devstash.io";
-
-const RECENT_ITEM_LIMIT = 10;
 
 export interface DashboardItem {
   id: string;
@@ -148,7 +148,9 @@ export async function getRecentItems(): Promise<DashboardItem[]> {
   const userId = await getDemoUserId();
   if (!userId) return [];
 
-  const rows = await itemQuery(userId, false).limit(RECENT_ITEM_LIMIT).all();
+  const rows = await itemQuery(userId, false)
+    .limit(DASHBOARD_RECENT_ITEMS_LIMIT)
+    .all();
   return rows.map(toDashboardItem);
 }
 
@@ -368,9 +370,29 @@ export async function updateItem(
   return findItemDetail(userId, itemId);
 }
 
-export async function getItemsByType(typeName: string): Promise<DashboardItem[]> {
+export interface PaginatedItems {
+  items: DashboardItem[];
+  total: number;
+  page: number;
+  pageSize: number;
+  totalPages: number;
+}
+
+export async function getItemsByType(
+  typeName: string,
+  page = 1,
+  pageSize: number,
+): Promise<PaginatedItems> {
+  const empty: PaginatedItems = {
+    items: [],
+    total: 0,
+    page: 1,
+    pageSize,
+    totalPages: 1,
+  };
+
   const userId = await getDemoUserId();
-  if (!userId) return [];
+  if (!userId) return empty;
 
   const itemType = await db.orm.public.ItemType.where({
     name: typeName,
@@ -378,20 +400,31 @@ export async function getItemsByType(typeName: string): Promise<DashboardItem[]>
   })
     .select("id")
     .first();
-  if (!itemType) return [];
+  if (!itemType) return empty;
 
-  const rows = await db.orm.public.Item.where({
-    userId,
-    itemTypeId: itemType.id,
-  })
+  const where = { userId, itemTypeId: itemType.id };
+  const { total } = await db.orm.public.Item.where(where).aggregate((agg) => ({
+    total: agg.count(),
+  }));
+  const pagination = getPaginationState(page, pageSize, total);
+
+  const rows = await db.orm.public.Item.where(where)
     .orderBy((item) => item.updatedAt.desc())
+    .limit(pagination.pageSize)
+    .offset(pagination.offset)
     .include("itemType", (type) => type.select("name", "color"))
     .include("itemTags", (links) =>
       links.include("tag", (tag) => tag.select("name"))
     )
     .all();
 
-  return rows.map(toDashboardItem);
+  return {
+    items: rows.map(toDashboardItem),
+    total: pagination.total,
+    page: pagination.page,
+    pageSize: pagination.pageSize,
+    totalPages: pagination.totalPages,
+  };
 }
 
 export async function getSidebarItemTypes(): Promise<SidebarItemType[]> {

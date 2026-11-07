@@ -9,8 +9,10 @@ import {
   getItemTypeLabel,
   getItemTypeNameFromSlug,
 } from "@/lib/constants/item-types";
+import { ITEMS_PER_PAGE } from "@/lib/constants/pagination";
 import { getDashboardShellData } from "@/lib/db/dashboard-shell";
 import { getItemsByType } from "@/lib/db/items";
+import { parsePageParam } from "@/lib/pagination";
 import { toSessionUser } from "@/types/session-user";
 
 export async function generateMetadata({
@@ -26,8 +28,10 @@ export async function generateMetadata({
 
 async function ItemsContent({
   params,
+  searchParams,
 }: {
   params: Promise<{ type: string }>;
+  searchParams: Promise<{ page?: string | string[] }>;
 }) {
   const { type } = await params;
   const name = getItemTypeNameFromSlug(type);
@@ -36,8 +40,11 @@ async function ItemsContent({
   const session = await auth();
   if (!session?.user?.id) redirect("/sign-in");
 
-  const [items, shell] = await Promise.all([
-    getItemsByType(name),
+  const query = await searchParams;
+  const page = parsePageParam(query.page);
+
+  const [result, shell] = await Promise.all([
+    getItemsByType(name, page, ITEMS_PER_PAGE),
     getDashboardShellData(session.user.id),
   ]);
 
@@ -48,15 +55,23 @@ async function ItemsContent({
       searchIndex={shell.searchIndex}
       user={toSessionUser(session.user)}
     >
-      <ItemListView typeName={name} items={items} />
+      <ItemListView
+        typeName={name}
+        items={result.items}
+        total={result.total}
+        page={result.page}
+        totalPages={result.totalPages}
+      />
     </DashboardShell>
   );
 }
 
 export default function ItemsPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ type: string }>;
+  searchParams: Promise<{ page?: string | string[] }>;
 }) {
   return (
     <Suspense
@@ -64,7 +79,7 @@ export default function ItemsPage({
         <p className="p-6 text-sm text-muted-foreground">Loading items…</p>
       }
     >
-      <ItemsContent params={params} />
+      <ItemsContent params={params} searchParams={searchParams} />
     </Suspense>
   );
 }
