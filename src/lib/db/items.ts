@@ -16,6 +16,9 @@ export interface DashboardItem {
   description: string | null;
   isFavorite: boolean;
   isPinned: boolean;
+  fileName: string | null;
+  fileSize: number | null;
+  createdAt: string;
   updatedAt: string;
   typeName: string;
   typeColor: string;
@@ -94,6 +97,9 @@ interface ItemRow {
   description: string | null;
   isFavorite: boolean;
   isPinned: boolean;
+  fileName: string | null;
+  fileSize: number | null;
+  createdAt: string;
   updatedAt: string;
   itemType: { name: string; color: string } | null;
   itemTags: { tag: { name: string } | null }[];
@@ -106,6 +112,9 @@ function toDashboardItem(row: ItemRow): DashboardItem {
     description: row.description,
     isFavorite: row.isFavorite,
     isPinned: row.isPinned,
+    fileName: row.fileName,
+    fileSize: row.fileSize,
+    createdAt: toIsoTimestamp(row.createdAt),
     updatedAt: toIsoTimestamp(row.updatedAt),
     typeName: row.itemType?.name ?? "item",
     typeColor: row.itemType?.color ?? "#6b7280",
