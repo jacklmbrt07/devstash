@@ -1,24 +1,16 @@
-# Current Feature: Audit Fixes Pack
+# Current Feature
 
 ## Status
 
-In Progress
+Not Started
 
 ## Goals
 
-- Centralize bcrypt cost as a shared `BCRYPT_ROUNDS` constant and use it everywhere passwords are hashed (register, reset, profile, seed)
-- Add a shared debounce utility with Vitest coverage for upcoming interactive search and other delayed handlers
-- Restrict item link URLs to `http`/`https` in create/update Zod schemas and only render safe `href`s in the drawer
-- Configure `next/image` for the R2 public host and replace remote `<img>` previews (gallery, drawer, upload)
-- Rate-limit `POST /api/upload` with the existing Upstash helper (per authenticated user)
+<!-- Feature goals -->
 
 ## Notes
 
-- Batch of security/perf cleanups after file/image work; same shape as earlier "Low-risk audit fixes"
-- Prefer `z.httpUrl()` (Zod) for link URLs; keep `fileUrl` as a normal URL that must match the R2 public prefix when practical
-- Upload limiter should extend `src/lib/rate-limit.ts` rather than inventing a second Redis client
-- `next.config.ts` needs `images.remotePatterns` derived from `R2_PUBLIC_URL` (or a documented hostname) before swapping to `next/image`
-- Debounce is a library + tests in this pass; wiring live dashboard search stays out of scope unless added later
+<!-- Spec notes / constraints -->
 
 ## History
 
@@ -281,3 +273,11 @@ In Progress
 - Gallery is one column on small screens, two from `md`, three from `lg`
 - Click opens ItemDrawer; `/items/files` stays on the Drive-style list
 - `DashboardItem` includes `fileUrl` so list queries can render R2 thumbnails
+
+### Audit Fixes Pack
+
+- Shared `BCRYPT_ROUNDS` in `src/lib/auth/bcrypt.ts` for register, reset, profile, and seed
+- `debounce` utility with Vitest coverage for upcoming interactive search
+- Link and file URLs require http(s) via Zod; the drawer only renders safe external `href`s
+- `next/image` is configured for the R2 public host; gallery, drawer, and upload use `RemoteImage`
+- `POST /api/upload` is rate-limited to 30 requests per hour per authenticated user
