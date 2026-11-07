@@ -1,8 +1,10 @@
 import { describe, expect, it } from "vitest";
 
 import {
+  CODE_LANGUAGE_OPTIONS,
   editorHeight,
   isCodeItemType,
+  languageSelectOptions,
   monacoLanguage,
 } from "./code-editor";
 
@@ -34,6 +36,32 @@ describe("monacoLanguage", () => {
     expect(monacoLanguage(undefined)).toBe("plaintext");
     expect(monacoLanguage("   ")).toBe("plaintext");
     expect(monacoLanguage("Rust")).toBe("rust");
+  });
+});
+
+describe("languageSelectOptions", () => {
+  it("includes the curated language list", () => {
+    const options = languageSelectOptions();
+    expect(options[0]).toEqual({ value: "", label: "Plain text" });
+    expect(options).toEqual(
+      expect.arrayContaining([
+        { value: "typescript", label: "TypeScript" },
+        { value: "bash", label: "Bash / Shell" },
+      ]),
+    );
+    expect(options).toHaveLength(CODE_LANGUAGE_OPTIONS.length);
+  });
+
+  it("appends an unknown current language so the select stays valid", () => {
+    const options = languageSelectOptions(" elixir ");
+    expect(options.at(-1)).toEqual({ value: "elixir", label: "elixir" });
+  });
+
+  it("does not duplicate a language that is already listed", () => {
+    const options = languageSelectOptions("typescript");
+    expect(
+      options.filter((option) => option.value === "typescript"),
+    ).toHaveLength(1);
   });
 });
 

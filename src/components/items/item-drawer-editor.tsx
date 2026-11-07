@@ -24,6 +24,10 @@ import {
 } from "@/lib/constants/item-types";
 import type { ItemDetail } from "@/lib/db/items";
 import { formatAbsoluteDate } from "@/lib/format-relative-time";
+import { languageSelectOptions } from "@/lib/items/code-editor";
+
+const SELECT_CLASS =
+  "h-8 w-full rounded-lg border border-input bg-transparent px-2.5 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 disabled:opacity-50 dark:bg-input/30";
 
 const CONTENT_TYPES = new Set(["snippet", "prompt", "command", "note"]);
 const LANGUAGE_TYPES = new Set(["snippet", "command"]);
@@ -164,11 +168,19 @@ export function ItemDrawerEditor({
 
       {showLanguage ? (
         <Field label="Language">
-          <Input
+          <select
             value={language}
             onChange={(event) => setLanguage(event.target.value)}
             disabled={saving}
-          />
+            className={SELECT_CLASS}
+            aria-label="Language"
+          >
+            {languageSelectOptions(language).map((option) => (
+              <option key={option.value || "plaintext"} value={option.value}>
+                {option.label}
+              </option>
+            ))}
+          </select>
         </Field>
       ) : null}
 

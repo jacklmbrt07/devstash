@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import Link from "next/link";
 import { Search } from "lucide-react";
 
 import { UserMenu } from "@/components/auth/user-menu";
@@ -16,10 +17,16 @@ export function DashboardTopBar({ sidebarToggle, user }: DashboardTopBarProps) {
     <header className="flex h-14 shrink-0 items-center gap-4 border-b border-border px-4">
       <div className="flex items-center gap-2">
         {sidebarToggle}
-        <span className="flex size-7 items-center justify-center rounded-md bg-primary text-xs font-semibold text-primary-foreground">
-          DS
-        </span>
-        <span className="text-sm font-semibold tracking-tight">DevStash</span>
+        <Link
+          href="/dashboard"
+          className="flex items-center gap-2 rounded-md outline-none focus-visible:ring-3 focus-visible:ring-ring/50"
+          aria-label="Go to dashboard"
+        >
+          <span className="flex size-7 items-center justify-center rounded-md bg-primary text-xs font-semibold text-primary-foreground">
+            DS
+          </span>
+          <span className="text-sm font-semibold tracking-tight">DevStash</span>
+        </Link>
       </div>
 
       <div className="relative mx-auto w-full max-w-xl">

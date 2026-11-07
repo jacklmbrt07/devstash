@@ -23,11 +23,15 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { languageSelectOptions } from "@/lib/items/code-editor";
 import {
   CREATABLE_ITEM_TYPES,
   CREATABLE_ITEM_TYPE_LABELS,
   type CreatableItemType,
 } from "@/lib/items/create-item-input";
+
+const SELECT_CLASS =
+  "h-8 w-full rounded-lg border border-input bg-transparent px-2.5 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 disabled:opacity-50 dark:bg-input/30";
 
 const CONTENT_TYPES = new Set<CreatableItemType>([
   "snippet",
@@ -159,7 +163,7 @@ export function CreateItemDialog() {
                 update("type", event.target.value as CreatableItemType)
               }
               disabled={saving}
-              className="h-8 w-full rounded-lg border border-input bg-transparent px-2.5 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 disabled:opacity-50 dark:bg-input/30"
+              className={SELECT_CLASS}
             >
               {CREATABLE_ITEM_TYPES.map((type) => (
                 <option key={type} value={type}>
@@ -199,11 +203,19 @@ export function CreateItemDialog() {
 
           {showLanguage ? (
             <Field label="Language">
-              <Input
+              <select
                 value={form.language}
                 onChange={(event) => update("language", event.target.value)}
                 disabled={saving}
-              />
+                className={SELECT_CLASS}
+                aria-label="Language"
+              >
+                {languageSelectOptions(form.language).map((option) => (
+                  <option key={option.value || "plaintext"} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
+              </select>
             </Field>
           ) : null}
 
