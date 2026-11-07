@@ -1,9 +1,8 @@
 import { FileItemRow } from "@/components/items/file-item-row";
+import { ImageThumbnailCard } from "@/components/items/image-thumbnail-card";
 import { ItemCard } from "@/components/items/item-card";
 import { getItemTypeLabel } from "@/lib/constants/item-types";
 import type { DashboardItem } from "@/lib/db/items";
-
-const FILE_LIST_TYPES = new Set(["file", "image"]);
 
 export function ItemListView({
   typeName,
@@ -14,7 +13,8 @@ export function ItemListView({
 }) {
   const label = getItemTypeLabel(typeName);
   const countLabel = items.length === 1 ? "item" : "items";
-  const useFileList = FILE_LIST_TYPES.has(typeName);
+  const useFileList = typeName === "file";
+  const useImageGallery = typeName === "image";
 
   return (
     <div className="mx-auto flex w-full max-w-6xl flex-col gap-6">
@@ -29,6 +29,12 @@ export function ItemListView({
           <div className="divide-y divide-border rounded-xl border border-border">
             {items.map((item) => (
               <FileItemRow key={item.id} item={item} />
+            ))}
+          </div>
+        ) : useImageGallery ? (
+          <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3">
+            {items.map((item) => (
+              <ImageThumbnailCard key={item.id} item={item} />
             ))}
           </div>
         ) : (

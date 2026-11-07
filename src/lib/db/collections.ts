@@ -216,6 +216,7 @@ export async function getCollectionById(
           description: item.description,
           isFavorite: item.isFavorite,
           isPinned: item.isPinned,
+          fileUrl: item.fileUrl,
           fileName: item.fileName,
           fileSize: item.fileSize,
           createdAt: toIsoTimestamp(item.createdAt),
