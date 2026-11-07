@@ -3,6 +3,7 @@
 import { useEffect, useId, useRef, useState, type DragEvent } from "react";
 import { FileIcon, ImageIcon, Upload, X } from "lucide-react";
 
+import { RemoteImage } from "@/components/items/remote-image";
 import { Button } from "@/components/ui/button";
 import {
   acceptAttribute,
@@ -170,12 +171,14 @@ export function FileUpload({
       {value ? (
         <div className="rounded-lg border border-border bg-muted/30 p-3">
           {kind === "image" && previewUrl ? (
-            // eslint-disable-next-line @next/next/no-img-element -- remote R2 preview; next/image not configured for R2
-            <img
-              src={previewUrl}
-              alt={value.fileName}
-              className="mb-3 max-h-48 w-full rounded-md object-contain bg-black/20"
-            />
+            <div className="relative mb-3 h-48 w-full overflow-hidden rounded-md bg-black/20">
+              <RemoteImage
+                src={previewUrl}
+                alt={value.fileName}
+                sizes="28rem"
+                className="object-contain"
+              />
+            </div>
           ) : (
             <div className="mb-3 flex items-center gap-2 text-sm">
               <FileIcon className="size-4 text-muted-foreground" aria-hidden />

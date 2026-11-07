@@ -1,6 +1,7 @@
 import { hash } from "bcryptjs";
 import { config } from "dotenv";
 
+import { BCRYPT_ROUNDS } from "../src/lib/auth/bcrypt";
 import type { Db } from "../src/prisma/db";
 
 config({ path: ".env.local" });
@@ -370,7 +371,7 @@ systemctl reload nginx`,
 async function seedDemoUser(db: Db) {
   console.log("Seeding demo user...");
 
-  const passwordHash = await hash(DEMO_USER.password, 12);
+  const passwordHash = await hash(DEMO_USER.password, BCRYPT_ROUNDS);
   const emailVerified = new Date().toISOString().replace(/Z$/, "");
 
   const existing = await db.orm.public.User.where({

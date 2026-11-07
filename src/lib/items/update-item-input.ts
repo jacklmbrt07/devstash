@@ -1,5 +1,7 @@
 import { z } from "zod";
 
+import { httpUrlSchema } from "@/lib/items/safe-url";
+
 function blankToNull(value: unknown): unknown {
   if (value == null) return null;
   if (typeof value !== "string") return value;
@@ -11,7 +13,7 @@ const nullableText = z.preprocess(blankToNull, z.string().nullable());
 
 const nullableUrl = z.preprocess(
   blankToNull,
-  z.union([z.url("Enter a valid URL"), z.null()]),
+  z.union([httpUrlSchema, z.null()]),
 );
 
 function uniqueTags(tags: string[]): string[] {

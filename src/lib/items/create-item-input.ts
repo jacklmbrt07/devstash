@@ -1,5 +1,7 @@
 import { z } from "zod";
 
+import { httpUrlSchema } from "@/lib/items/safe-url";
+
 export const CREATABLE_ITEM_TYPES = [
   "snippet",
   "prompt",
@@ -58,7 +60,11 @@ const codedItem = textItem.extend({
 });
 
 const fileFields = {
-  fileUrl: z.string().trim().min(1, "Upload a file first").pipe(z.url("Upload a file first")),
+  fileUrl: z
+    .string()
+    .trim()
+    .min(1, "Upload a file first")
+    .pipe(z.httpUrl("Upload a file first")),
   fileName: z.string().trim().min(1, "Upload a file first"),
   fileSize: z.number().int().positive("Upload a file first"),
 };
@@ -81,11 +87,7 @@ export const createItemSchema = z.discriminatedUnion("type", [
   z.object({
     ...sharedFields,
     type: z.literal("link"),
-    url: z
-      .string()
-      .trim()
-      .min(1, "URL is required")
-      .pipe(z.url("Enter a valid URL")),
+    url: z.string().trim().min(1, "URL is required").pipe(httpUrlSchema),
   }),
 ]);
 

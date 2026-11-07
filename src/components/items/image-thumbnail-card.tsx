@@ -3,6 +3,7 @@
 import { ImageIcon } from "lucide-react";
 
 import { useItemDrawer } from "@/components/items/item-drawer";
+import { RemoteImage } from "@/components/items/remote-image";
 import type { DashboardItem } from "@/lib/db/items";
 import { displayFileName } from "@/lib/items/file-display";
 
@@ -17,13 +18,13 @@ export function ImageThumbnailCard({ item }: { item: DashboardItem }) {
       className="group block w-full cursor-pointer rounded-xl text-left outline-none focus-visible:ring-3 focus-visible:ring-ring/50"
     >
       <div className="overflow-hidden rounded-xl border border-border bg-muted/40">
-        <div className="aspect-video overflow-hidden">
+        <div className="relative aspect-video overflow-hidden">
           {item.fileUrl ? (
-            // eslint-disable-next-line @next/next/no-img-element -- remote R2 preview; next/image not configured for R2
-            <img
+            <RemoteImage
               src={item.fileUrl}
               alt={label}
-              className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+              sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
+              className="object-cover transition-transform duration-300 group-hover:scale-105"
             />
           ) : (
             <div className="flex h-full w-full items-center justify-center text-muted-foreground">

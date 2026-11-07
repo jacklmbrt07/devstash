@@ -8,12 +8,13 @@ import {
   retryAfterSeconds,
 } from "@/lib/rate-limit-message";
 
-export type AuthRateLimit =
+export type RateLimitName =
   | "login"
   | "register"
   | "forgotPassword"
   | "resetPassword"
-  | "resendVerification";
+  | "resendVerification"
+  | "upload";
 
 const LIMITS = {
   login: { tokens: 5, window: "15 m" },
@@ -21,12 +22,13 @@ const LIMITS = {
   forgotPassword: { tokens: 3, window: "1 h" },
   resetPassword: { tokens: 5, window: "15 m" },
   resendVerification: { tokens: 3, window: "15 m" },
+  upload: { tokens: 30, window: "1 h" },
 } as const satisfies Record<
-  AuthRateLimit,
+  RateLimitName,
   { tokens: number; window: "15 m" | "1 h" }
 >;
 
-const limiters = new Map<AuthRateLimit, Ratelimit>();
+const limiters = new Map<RateLimitName, Ratelimit>();
 let redis: Redis | null | undefined;
 
 function getRedis(): Redis | null {
@@ -37,7 +39,7 @@ function getRedis(): Redis | null {
   return redis;
 }
 
-function getLimiter(name: AuthRateLimit): Ratelimit | null {
+function getLimiter(name: RateLimitName): Ratelimit | null {
   const client = getRedis();
   if (!client) return null;
 
@@ -45,10 +47,12 @@ function getLimiter(name: AuthRateLimit): Ratelimit | null {
   if (existing) return existing;
 
   const config = LIMITS[name];
+  const prefix =
+    name === "upload" ? "devstash:upload" : `devstash:auth:${name}`;
   const limiter = new Ratelimit({
     redis: client,
     limiter: Ratelimit.slidingWindow(config.tokens, config.window),
-    prefix: `devstash:auth:${name}`,
+    prefix,
     timeout: 1000,
   });
   limiters.set(name, limiter);
@@ -76,7 +80,7 @@ export function rateLimitKey(ip: string, identifier?: string): string {
 }
 
 export async function checkRateLimit(
-  name: AuthRateLimit,
+  name: RateLimitName,
   identifier: string,
 ): Promise<RateLimitCheck> {
   const allowance = LIMITS[name].tokens;

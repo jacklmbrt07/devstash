@@ -17,6 +17,7 @@ import {
 } from "@/components/items/markdown-editor";
 import { DeleteItemDialog } from "@/components/items/delete-item-dialog";
 import { ItemDrawerEditor } from "@/components/items/item-drawer-editor";
+import { RemoteImage } from "@/components/items/remote-image";
 import { Button } from "@/components/ui/button";
 import {
   Sheet,
@@ -32,6 +33,7 @@ import {
 import type { ItemDetail } from "@/lib/db/items";
 import { formatRelativeTime } from "@/lib/format-relative-time";
 import { formatFileSize } from "@/lib/items/file-upload";
+import { safeExternalUrl } from "@/lib/items/safe-url";
 
 interface ItemDrawerContextValue {
   openItem: (id: string) => void;
@@ -196,6 +198,7 @@ function ItemDrawerBody({
   const [editing, setEditing] = useState(false);
   const Icon = ITEM_TYPE_ICONS[item.typeName];
   const typeLabel = singularTypeLabel(item.typeName);
+  const externalUrl = safeExternalUrl(item.url);
 
   if (editing) {
     return (
@@ -278,25 +281,33 @@ function ItemDrawerBody({
 
       {item.url ? (
         <DetailSection label="URL">
-          <a
-            href={item.url}
-            target="_blank"
-            rel="noreferrer"
-            className="truncate text-sm text-foreground underline-offset-4 hover:underline"
-          >
-            {item.url}
-          </a>
+          {externalUrl ? (
+            <a
+              href={externalUrl}
+              target="_blank"
+              rel="noreferrer"
+              className="truncate text-sm text-foreground underline-offset-4 hover:underline"
+            >
+              {item.url}
+            </a>
+          ) : (
+            <span className="truncate text-sm text-muted-foreground">
+              {item.url}
+            </span>
+          )}
         </DetailSection>
       ) : null}
 
       {item.contentType === "FILE" && item.typeName === "image" && item.fileUrl ? (
         <DetailSection label="Image">
-          {/* eslint-disable-next-line @next/next/no-img-element -- remote R2 preview; next/image not configured for R2 */}
-          <img
-            src={item.fileUrl}
-            alt={item.fileName ?? item.title}
-            className="max-h-80 w-full rounded-lg object-contain bg-muted/40"
-          />
+          <div className="relative h-80 w-full overflow-hidden rounded-lg bg-muted/40">
+            <RemoteImage
+              src={item.fileUrl}
+              alt={item.fileName ?? item.title}
+              sizes="(max-width: 640px) 100vw, 28rem"
+              className="object-contain"
+            />
+          </div>
           {item.fileName ? (
             <p className="text-sm text-muted-foreground">
               {item.fileName}

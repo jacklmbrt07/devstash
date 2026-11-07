@@ -1,6 +1,7 @@
 import { hash } from "bcryptjs";
 import { NextResponse } from "next/server";
 
+import { BCRYPT_ROUNDS } from "@/lib/auth/bcrypt";
 import { isEmailVerificationEnabled } from "@/lib/auth/email-verification-config";
 import {
   createEmailVerificationToken,
@@ -10,8 +11,6 @@ import {
 import { sendVerificationEmail } from "@/lib/email/resend";
 import { checkRateLimit, clientIp, rateLimitResponse } from "@/lib/rate-limit";
 import { db } from "@/prisma/db";
-
-const BCRYPT_ROUNDS = 12;
 
 interface RegisterBody {
   name?: unknown;

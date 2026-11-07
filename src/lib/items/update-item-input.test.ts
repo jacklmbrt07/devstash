@@ -60,4 +60,16 @@ describe("updateItemSchema", () => {
       expect(tags.error.issues[0]?.message).toBe("Tags can't be empty");
     }
   });
+
+  it("rejects non-http URL protocols", () => {
+    const result = updateItemSchema.safeParse({
+      ...validInput,
+      url: "javascript:alert(1)",
+    });
+
+    expect(result.success).toBe(false);
+    if (!result.success) {
+      expect(result.error.issues[0]?.message).toBe("Enter a valid URL");
+    }
+  });
 });

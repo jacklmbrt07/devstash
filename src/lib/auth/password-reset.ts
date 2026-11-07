@@ -2,6 +2,7 @@ import { randomBytes } from "node:crypto";
 
 import { hash } from "bcryptjs";
 
+import { BCRYPT_ROUNDS } from "@/lib/auth/bcrypt";
 import { sendPasswordResetEmail } from "@/lib/email/resend";
 import { db } from "@/prisma/db";
 
@@ -16,7 +17,6 @@ import {
 } from "@/lib/auth/verification-token";
 
 const TOKEN_TTL_MS = 60 * 60 * 1000;
-const BCRYPT_ROUNDS = 12;
 
 export type PasswordResetTokenStatus = "valid" | "expired" | "invalid";
 

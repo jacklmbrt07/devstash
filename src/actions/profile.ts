@@ -3,13 +3,12 @@
 import { compare, hash } from "bcryptjs";
 
 import { auth, signOut } from "@/auth";
+import { BCRYPT_ROUNDS } from "@/lib/auth/bcrypt";
 import {
   deleteVerificationTokensForIdentifier,
   passwordResetIdentifier,
 } from "@/lib/auth/verification-token";
 import { db } from "@/prisma/db";
-
-const BCRYPT_ROUNDS = 12;
 
 export interface ProfileActionState {
   success: boolean;

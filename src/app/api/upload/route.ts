@@ -6,6 +6,7 @@ import {
   validateUploadFile,
   type UploadKind,
 } from "@/lib/items/file-upload";
+import { checkRateLimit, rateLimitResponse } from "@/lib/rate-limit";
 import { publicUrlForKey, uploadObject } from "@/lib/r2";
 
 function isUploadKind(value: FormDataEntryValue | null): value is UploadKind {
@@ -18,6 +19,9 @@ export async function POST(request: Request) {
   if (!userId) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
+
+  const limit = await checkRateLimit("upload", userId);
+  if (!limit.success) return rateLimitResponse(limit);
 
   let formData: FormData;
   try {
