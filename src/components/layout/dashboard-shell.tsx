@@ -1,11 +1,17 @@
 "use client";
 
-import { useState, useSyncExternalStore, type ReactNode } from "react";
+import {
+  useEffect,
+  useState,
+  useSyncExternalStore,
+  type ReactNode,
+} from "react";
 import { PanelLeft } from "lucide-react";
 
 import { DashboardSidebar } from "@/components/layout/dashboard-sidebar";
 import { DashboardTopBar } from "@/components/layout/dashboard-top-bar";
 import { ItemDrawer } from "@/components/items/item-drawer";
+import { GlobalSearch } from "@/components/search/global-search";
 import { Button } from "@/components/ui/button";
 import {
   Sheet,
@@ -16,6 +22,7 @@ import {
 } from "@/components/ui/sheet";
 import type { SidebarCollections } from "@/lib/db/collections";
 import type { SidebarItemType } from "@/lib/db/items";
+import type { SearchIndex } from "@/lib/db/search";
 import { cn } from "@/lib/utils";
 import type { SessionUser } from "@/types/session-user";
 
@@ -23,6 +30,7 @@ interface DashboardShellProps {
   children: ReactNode;
   itemTypes: SidebarItemType[];
   collections: SidebarCollections;
+  searchIndex: SearchIndex;
   user: SessionUser;
 }
 
@@ -38,19 +46,32 @@ function isDesktopViewport() {
   return window.matchMedia(LG_QUERY).matches;
 }
 
+function subscribeToMac(onStoreChange: () => void) {
+  void onStoreChange;
+  return () => {};
+}
+
+function isMacPlatform() {
+  return /Mac|iPhone|iPad|iPod/i.test(navigator.platform);
+}
+
 export function DashboardShell({
   children,
   itemTypes,
   collections,
+  searchIndex,
   user,
 }: DashboardShellProps) {
   const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [searchOpen, setSearchOpen] = useState(false);
   const isDesktop = useSyncExternalStore(
     subscribeToDesktop,
     isDesktopViewport,
     () => false
   );
+  const isMac = useSyncExternalStore(subscribeToMac, isMacPlatform, () => true);
+  const searchShortcutLabel = isMac ? "⌘K" : "Ctrl+K";
   const sidebarLabel = isDesktop
     ? collapsed
       ? "Expand sidebar"
@@ -58,6 +79,18 @@ export function DashboardShell({
     : mobileOpen
       ? "Close navigation"
       : "Open navigation";
+
+  useEffect(() => {
+    function onKeyDown(event: KeyboardEvent) {
+      if (!(event.metaKey || event.ctrlKey)) return;
+      if (event.key.toLowerCase() !== "k") return;
+      event.preventDefault();
+      setSearchOpen((open) => !open);
+    }
+
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, []);
 
   function handleToggle() {
     if (typeof window !== "undefined" && window.matchMedia(LG_QUERY).matches) {
@@ -85,6 +118,8 @@ export function DashboardShell({
             </Button>
           }
           user={user}
+          onSearchOpen={() => setSearchOpen(true)}
+          searchShortcutLabel={searchShortcutLabel}
         />
 
         <div className="flex min-h-0 flex-1">
@@ -126,6 +161,12 @@ export function DashboardShell({
           <main className="flex-1 overflow-auto p-6">{children}</main>
         </div>
       </div>
+
+      <GlobalSearch
+        open={searchOpen}
+        onOpenChange={setSearchOpen}
+        searchIndex={searchIndex}
+      />
     </ItemDrawer>
   );
 }

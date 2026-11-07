@@ -11,9 +11,16 @@ import type { SessionUser } from "@/types/session-user";
 interface DashboardTopBarProps {
   sidebarToggle?: ReactNode;
   user: SessionUser;
+  onSearchOpen: () => void;
+  searchShortcutLabel: string;
 }
 
-export function DashboardTopBar({ sidebarToggle, user }: DashboardTopBarProps) {
+export function DashboardTopBar({
+  sidebarToggle,
+  user,
+  onSearchOpen,
+  searchShortcutLabel,
+}: DashboardTopBarProps) {
   return (
     <header className="flex h-14 shrink-0 items-center gap-4 border-b border-border px-4">
       <div className="flex items-center gap-2">
@@ -34,10 +41,12 @@ export function DashboardTopBar({ sidebarToggle, user }: DashboardTopBarProps) {
         <Search className="pointer-events-none absolute top-1/2 left-2.5 size-4 -translate-y-1/2 text-muted-foreground" />
         <Input
           type="search"
-          placeholder="Search items, tags, collections..."
-          className="pl-8"
+          placeholder={`Search items, collections… ${searchShortcutLabel}`}
+          className="cursor-pointer pl-8"
           readOnly
-          aria-label="Search"
+          aria-label="Open search"
+          onClick={onSearchOpen}
+          onFocus={onSearchOpen}
         />
       </div>
 

@@ -5,11 +5,8 @@ import { notFound, redirect } from "next/navigation";
 import { auth } from "@/auth";
 import { CollectionDetailView } from "@/components/collections/collection-detail-view";
 import { DashboardShell } from "@/components/layout/dashboard-shell";
-import {
-  getCollectionById,
-  getSidebarCollections,
-} from "@/lib/db/collections";
-import { getSidebarItemTypes } from "@/lib/db/items";
+import { getCollectionById } from "@/lib/db/collections";
+import { getDashboardShellData } from "@/lib/db/dashboard-shell";
 import { toSessionUser } from "@/types/session-user";
 
 export async function generateMetadata({
@@ -41,18 +38,18 @@ async function CollectionContent({
   const session = await auth();
   if (!session?.user?.id) redirect("/sign-in");
 
-  const [collection, itemTypes, sidebarCollections] = await Promise.all([
+  const [collection, shell] = await Promise.all([
     getCollectionById(session.user.id, id),
-    getSidebarItemTypes(),
-    getSidebarCollections(session.user.id),
+    getDashboardShellData(session.user.id),
   ]);
 
   if (!collection) notFound();
 
   return (
     <DashboardShell
-      itemTypes={itemTypes}
-      collections={sidebarCollections}
+      itemTypes={shell.itemTypes}
+      collections={shell.collections}
+      searchIndex={shell.searchIndex}
       user={toSessionUser(session.user)}
     >
       <CollectionDetailView collection={collection} />

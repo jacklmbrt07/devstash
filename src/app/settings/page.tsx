@@ -5,8 +5,7 @@ import { redirect } from "next/navigation";
 import { auth } from "@/auth";
 import { DashboardShell } from "@/components/layout/dashboard-shell";
 import { SettingsView } from "@/components/settings/settings-view";
-import { getSidebarCollections } from "@/lib/db/collections";
-import { getSidebarItemTypes } from "@/lib/db/items";
+import { getDashboardShellData } from "@/lib/db/dashboard-shell";
 import { toSessionUser } from "@/types/session-user";
 
 export const metadata: Metadata = {
@@ -17,15 +16,13 @@ async function SettingsContent() {
   const session = await auth();
   if (!session?.user?.id) redirect("/sign-in");
 
-  const [itemTypes, collections] = await Promise.all([
-    getSidebarItemTypes(),
-    getSidebarCollections(session.user.id),
-  ]);
+  const shell = await getDashboardShellData(session.user.id);
 
   return (
     <DashboardShell
-      itemTypes={itemTypes}
-      collections={collections}
+      itemTypes={shell.itemTypes}
+      collections={shell.collections}
+      searchIndex={shell.searchIndex}
       user={toSessionUser(session.user)}
     >
       <SettingsView />

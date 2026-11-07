@@ -5,8 +5,7 @@ import { redirect } from "next/navigation";
 import { auth } from "@/auth";
 import { DashboardShell } from "@/components/layout/dashboard-shell";
 import { ProfileView } from "@/components/profile/profile-view";
-import { getSidebarCollections } from "@/lib/db/collections";
-import { getSidebarItemTypes } from "@/lib/db/items";
+import { getDashboardShellData } from "@/lib/db/dashboard-shell";
 import { getProfile } from "@/lib/db/profile";
 import { toSessionUser } from "@/types/session-user";
 
@@ -18,18 +17,18 @@ async function ProfileContent() {
   const session = await auth();
   if (!session?.user?.id) redirect("/sign-in");
 
-  const [profile, itemTypes, collections] = await Promise.all([
+  const [profile, shell] = await Promise.all([
     getProfile(session.user.id),
-    getSidebarItemTypes(),
-    getSidebarCollections(session.user.id),
+    getDashboardShellData(session.user.id),
   ]);
 
   if (!profile) redirect("/sign-in");
 
   return (
     <DashboardShell
-      itemTypes={itemTypes}
-      collections={collections}
+      itemTypes={shell.itemTypes}
+      collections={shell.collections}
+      searchIndex={shell.searchIndex}
       user={toSessionUser(session.user)}
     >
       <ProfileView profile={profile} />

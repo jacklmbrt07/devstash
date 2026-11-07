@@ -5,11 +5,8 @@ import { redirect } from "next/navigation";
 import { auth } from "@/auth";
 import { CollectionListView } from "@/components/collections/collection-list-view";
 import { DashboardShell } from "@/components/layout/dashboard-shell";
-import {
-  getAllCollections,
-  getSidebarCollections,
-} from "@/lib/db/collections";
-import { getSidebarItemTypes } from "@/lib/db/items";
+import { getAllCollections } from "@/lib/db/collections";
+import { getDashboardShellData } from "@/lib/db/dashboard-shell";
 import { toSessionUser } from "@/types/session-user";
 
 export const metadata: Metadata = {
@@ -20,16 +17,16 @@ async function CollectionsContent() {
   const session = await auth();
   if (!session?.user?.id) redirect("/sign-in");
 
-  const [collections, itemTypes, sidebarCollections] = await Promise.all([
+  const [collections, shell] = await Promise.all([
     getAllCollections(session.user.id),
-    getSidebarItemTypes(),
-    getSidebarCollections(session.user.id),
+    getDashboardShellData(session.user.id),
   ]);
 
   return (
     <DashboardShell
-      itemTypes={itemTypes}
-      collections={sidebarCollections}
+      itemTypes={shell.itemTypes}
+      collections={shell.collections}
+      searchIndex={shell.searchIndex}
       user={toSessionUser(session.user)}
     >
       <CollectionListView collections={collections} />

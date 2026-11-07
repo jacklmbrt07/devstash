@@ -9,8 +9,8 @@ import {
   getItemTypeLabel,
   getItemTypeNameFromSlug,
 } from "@/lib/constants/item-types";
-import { getSidebarCollections } from "@/lib/db/collections";
-import { getItemsByType, getSidebarItemTypes } from "@/lib/db/items";
+import { getDashboardShellData } from "@/lib/db/dashboard-shell";
+import { getItemsByType } from "@/lib/db/items";
 import { toSessionUser } from "@/types/session-user";
 
 export async function generateMetadata({
@@ -36,16 +36,16 @@ async function ItemsContent({
   const session = await auth();
   if (!session?.user?.id) redirect("/sign-in");
 
-  const [items, itemTypes, collections] = await Promise.all([
+  const [items, shell] = await Promise.all([
     getItemsByType(name),
-    getSidebarItemTypes(),
-    getSidebarCollections(session.user.id),
+    getDashboardShellData(session.user.id),
   ]);
 
   return (
     <DashboardShell
-      itemTypes={itemTypes}
-      collections={collections}
+      itemTypes={shell.itemTypes}
+      collections={shell.collections}
+      searchIndex={shell.searchIndex}
       user={toSessionUser(session.user)}
     >
       <ItemListView typeName={name} items={items} />

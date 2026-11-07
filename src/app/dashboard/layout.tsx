@@ -2,7 +2,7 @@ import { Suspense, type ReactNode } from "react";
 
 import { auth } from "@/auth";
 import { DashboardShell } from "@/components/layout/dashboard-shell";
-import { getSidebarCollections } from "@/lib/db/collections";
+import { getDashboardShellData } from "@/lib/db/dashboard-shell";
 import { getSidebarItemTypes } from "@/lib/db/items";
 import { toSessionUser } from "@/types/session-user";
 
@@ -20,17 +20,19 @@ async function DashboardFrame({
   const session = await auth();
   const userId = session?.user?.id;
 
-  const [itemTypes, collections] = await Promise.all([
-    getSidebarItemTypes(),
-    userId
-      ? getSidebarCollections(userId)
-      : Promise.resolve({ favorites: [], recent: [] }),
-  ]);
+  const shell = userId
+    ? await getDashboardShellData(userId)
+    : {
+        itemTypes: await getSidebarItemTypes(),
+        collections: { favorites: [], recent: [] },
+        searchIndex: { items: [], collections: [] },
+      };
 
   return (
     <DashboardShell
-      itemTypes={itemTypes}
-      collections={collections}
+      itemTypes={shell.itemTypes}
+      collections={shell.collections}
+      searchIndex={shell.searchIndex}
       user={toSessionUser(session?.user)}
     >
       {children}
