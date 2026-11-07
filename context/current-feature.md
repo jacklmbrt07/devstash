@@ -1,27 +1,16 @@
-# Current Feature: Global Search / Command Palette
+# Current Feature
 
 ## Status
 
-Complete
+Not Started
 
 ## Goals
 
-- Open with Cmd+K (Mac) / Ctrl+K (Windows)
-- Fuzzy search across all items and collections
-- Grouped results: Items section, Collections section
-- Keyboard navigation (arrow keys, Enter to select)
-- Show item type icon and collection item count
-- Navigate to item drawer or collection page on select
-- TopBar search input opens palette on click
-- Show ⌘K hint in search input placeholder
+<!-- Feature goals -->
 
 ## Notes
 
-- Use shadcn `cmdk` component (Command)
-- Client-side fuzzy search (no server round-trips)
-- Pre-fetch searchable data on app load
-- Search data: items (id, title, type, content preview), collections (id, name, itemCount)
-- Reuse existing data fetching functions
+<!-- Spec notes / constraints -->
 
 ## History
 
@@ -323,3 +312,11 @@ Complete
 - Sidebar user dropdown includes a Settings link above Sign out
 - Delete account moved from profile Account actions to the settings page
 - Profile keeps identity, usage stats, and change password for email accounts
+
+### Global Search / Command Palette
+
+- Cmd+K / Ctrl+K and the TopBar search field open a shadcn `cmdk` command palette
+- Search index is prefetched with `getDashboardShellData` (items and collections for the signed-in user)
+- Client-side fuzzy filtering groups Items (type icon + content preview) and Collections (item count)
+- Selecting an item opens the item drawer; selecting a collection goes to `/collections/[id]`
+- TopBar placeholder shows a ⌘K or Ctrl+K hint by platform
