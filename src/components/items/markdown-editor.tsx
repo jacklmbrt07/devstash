@@ -4,7 +4,7 @@ import { useMemo, useState } from "react";
 import Markdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { cn } from "cn";
-import { Check, Copy } from "lucide-react";
+import { Check, Copy, Eye, Pencil } from "lucide-react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
@@ -12,7 +12,7 @@ import { editorHeight } from "@/lib/items/code-editor";
 
 export { isMarkdownItemType } from "@/lib/items/markdown-editor";
 
-type EditorTab = "write" | "preview";
+type EditorMode = "write" | "preview";
 
 export function MarkdownEditor({
   value,
@@ -27,11 +27,12 @@ export function MarkdownEditor({
   onChange?: (value: string) => void;
   className?: string;
 }) {
-  const [tab, setTab] = useState<EditorTab>(readOnly ? "preview" : "write");
+  const [mode, setMode] = useState<EditorMode>(readOnly ? "preview" : "write");
   const [copied, setCopied] = useState(false);
   const height = useMemo(() => editorHeight(value), [value]);
   const locked = readOnly || disabled;
-  const activeTab: EditorTab = readOnly ? "preview" : tab;
+  const activeMode: EditorMode = readOnly ? "preview" : mode;
+  const showingPreview = activeMode === "preview";
 
   async function copyMarkdown() {
     try {
@@ -63,44 +64,21 @@ export function MarkdownEditor({
               Preview
             </span>
           ) : (
-            <div
-              role="tablist"
-              aria-label="Markdown editor mode"
-              className="flex items-center gap-0.5 rounded-md bg-black/25 p-0.5"
+            <Button
+              type="button"
+              variant="ghost"
+              size="xs"
+              aria-pressed={showingPreview}
+              aria-label={showingPreview ? "Edit markdown" : "Preview markdown"}
+              className="gap-1 text-white/70 hover:bg-white/10 hover:text-white"
+              onClick={() =>
+                setMode(showingPreview ? "write" : "preview")
+              }
+              disabled={disabled}
             >
-              <button
-                type="button"
-                role="tab"
-                aria-selected={activeTab === "write"}
-                disabled={disabled}
-                className={cn(
-                  "rounded px-2 py-0.5 text-[11px] font-medium tracking-wide uppercase transition-colors",
-                  activeTab === "write"
-                    ? "bg-white/15 text-white"
-                    : "text-white/50 hover:text-white/80",
-                  disabled && "opacity-50",
-                )}
-                onClick={() => setTab("write")}
-              >
-                Write
-              </button>
-              <button
-                type="button"
-                role="tab"
-                aria-selected={activeTab === "preview"}
-                disabled={disabled}
-                className={cn(
-                  "rounded px-2 py-0.5 text-[11px] font-medium tracking-wide uppercase transition-colors",
-                  activeTab === "preview"
-                    ? "bg-white/15 text-white"
-                    : "text-white/50 hover:text-white/80",
-                  disabled && "opacity-50",
-                )}
-                onClick={() => setTab("preview")}
-              >
-                Preview
-              </button>
-            </div>
+              {showingPreview ? <Pencil /> : <Eye />}
+              {showingPreview ? "Edit" : "Preview"}
+            </Button>
           )}
           <Button
             type="button"
@@ -118,7 +96,18 @@ export function MarkdownEditor({
         </div>
       </div>
 
-      {activeTab === "write" ? (
+      {showingPreview ? (
+        <div
+          className="markdown-preview overflow-auto px-3 py-2 text-sm text-white/90"
+          style={{ height }}
+        >
+          {value.trim() ? (
+            <Markdown remarkPlugins={[remarkGfm]}>{value}</Markdown>
+          ) : (
+            <p className="text-white/30">Nothing to preview</p>
+          )}
+        </div>
+      ) : (
         <textarea
           value={value}
           onChange={(event) => {
@@ -133,17 +122,6 @@ export function MarkdownEditor({
           style={{ height }}
           placeholder="Write markdown…"
         />
-      ) : (
-        <div
-          className="markdown-preview overflow-auto px-3 py-2 text-sm text-white/90"
-          style={{ height }}
-        >
-          {value.trim() ? (
-            <Markdown remarkPlugins={[remarkGfm]}>{value}</Markdown>
-          ) : (
-            <p className="text-white/30">Nothing to preview</p>
-          )}
-        </div>
       )}
     </div>
   );
