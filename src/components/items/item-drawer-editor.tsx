@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 
 import { updateItem } from "@/actions/items";
+import { CodeEditor, isCodeItemType } from "@/components/items/code-editor";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -180,13 +181,22 @@ export function ItemDrawerEditor({
 
       {showContent ? (
         <Field label="Content">
-          <Textarea
-            value={content}
-            onChange={(event) => setContent(event.target.value)}
-            rows={12}
-            className="font-mono text-xs"
-            disabled={saving}
-          />
+          {isCodeItemType(item.typeName) ? (
+            <CodeEditor
+              value={content}
+              language={language}
+              onChange={setContent}
+              disabled={saving}
+            />
+          ) : (
+            <Textarea
+              value={content}
+              onChange={(event) => setContent(event.target.value)}
+              rows={12}
+              className="font-mono text-xs"
+              disabled={saving}
+            />
+          )}
         </Field>
       ) : null}
 

@@ -6,6 +6,7 @@ import { Plus } from "lucide-react";
 import { toast } from "sonner";
 
 import { createItem } from "@/actions/items";
+import { CodeEditor, isCodeItemType } from "@/components/items/code-editor";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -216,13 +217,22 @@ export function CreateItemDialog() {
 
           {showContent ? (
             <Field label="Content">
-              <Textarea
-                value={form.content}
-                onChange={(event) => update("content", event.target.value)}
-                rows={8}
-                className="font-mono text-xs"
-                disabled={saving}
-              />
+              {isCodeItemType(form.type) ? (
+                <CodeEditor
+                  value={form.content}
+                  language={form.language}
+                  onChange={(content) => update("content", content)}
+                  disabled={saving}
+                />
+              ) : (
+                <Textarea
+                  value={form.content}
+                  onChange={(event) => update("content", event.target.value)}
+                  rows={8}
+                  className="font-mono text-xs"
+                  disabled={saving}
+                />
+              )}
             </Field>
           ) : null}
 

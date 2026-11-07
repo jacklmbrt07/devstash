@@ -128,3 +128,13 @@
     @apply font-sans;
     }
 }
+
+/* Monaco scrollbar — matches dark editor chrome */
+.code-editor .monaco-scrollable-element > .scrollbar > .slider {
+  border-radius: 999px !important;
+  background: color-mix(in oklch, white 22%, transparent) !important;
+}
+
+.code-editor .monaco-scrollable-element > .scrollbar > .slider:hover {
+  background: color-mix(in oklch, white 35%, transparent) !important;
+}

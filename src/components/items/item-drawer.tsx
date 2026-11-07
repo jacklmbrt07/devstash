@@ -10,6 +10,7 @@ import {
 import { Copy, Pencil, Pin, Star } from "lucide-react";
 import { toast } from "sonner";
 
+import { CodeEditor, isCodeItemType } from "@/components/items/code-editor";
 import { DeleteItemDialog } from "@/components/items/delete-item-dialog";
 import { ItemDrawerEditor } from "@/components/items/item-drawer-editor";
 import { Button } from "@/components/ui/button";
@@ -276,9 +277,17 @@ function ItemDrawerBody({
 
       {item.content ? (
         <DetailSection label="Content">
-          <pre className="max-h-80 overflow-auto rounded-lg bg-muted/60 p-3 font-mono text-xs leading-relaxed whitespace-pre-wrap">
-            {item.content}
-          </pre>
+          {isCodeItemType(item.typeName) ? (
+            <CodeEditor
+              value={item.content}
+              language={item.language}
+              readOnly
+            />
+          ) : (
+            <pre className="max-h-80 overflow-auto rounded-lg bg-muted/60 p-3 font-mono text-xs leading-relaxed whitespace-pre-wrap">
+              {item.content}
+            </pre>
+          )}
         </DetailSection>
       ) : null}
 
