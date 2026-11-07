@@ -1,24 +1,16 @@
-# Current Feature: Add Items To Collections
+# Current Feature
 
 ## Status
 
-In Progress
+Not Started
 
 ## Goals
 
-- Add an item to a single collection or multiple collections
-- Add a collection multi-select input to the new item form
-- Add the same collection multi-select to the edit item form
-- Persist selected collection membership when creating or updating an item
-- Do not build collection pages or collection browsing UI in this feature
+<!-- Feature goals -->
 
 ## Notes
 
-- Follow existing item create/edit patterns (actions, Zod validation, `lib/db` queries)
-- Collections are many-to-many with items; selection should support zero, one, or many
-- Available collections should come from the signed-in user's collections
-- Toast / refresh behavior should stay consistent with current create and edit flows
-
+<!-- Spec notes / constraints -->
 
 ## History
 
@@ -290,3 +282,10 @@ In Progress
 - The query in `src/lib/db/collections.ts` creates the collection for the signed-in user
 - Collection list, detail, sidebar, and stats helpers take `userId` from the session (no demo-user stand-in)
 - A success toast closes the dialog and `router.refresh()` updates the UI
+
+### Add Items To Collections
+
+- New and edit item forms include a collection multi-select (zero, one, or many)
+- `collectionIds` is validated in create/update Zod schemas and written via `replaceItemCollections`
+- Options load through `listCollectionOptions` for the signed-in user
+- Collection pages were left unchanged
