@@ -1,27 +1,12 @@
-# Current Feature: Markdown Editor
+# Current Feature
 
 ## Status
 
-In Progress
+Not Started
 
 ## Goals
 
-- Create MarkdownEditor component with Write/Preview tabs
-- Replace Textarea with MarkdownEditor for notes and prompts only
-- Keep CodeEditor for snippets and commands unchanged
-- Use react-markdown with remark-gfm for GitHub Flavored Markdown
-- Match existing dark theme (bg-[#1e1e1e] container, bg-[#2d2d2d] header)
-- Add copy button in header (same style as CodeEditor)
-- Support display (readonly) and edit modes — readonly shows Preview only; edit defaults to Write
-- Style preview with distinct headings, code blocks, inline code, lists, blockquotes, links, and tables via `.markdown-preview`
-- Fluid height with max 400px, matching CodeEditor
-- Integrate in NewItemDialog and ItemDrawer (edit + view) for note and prompt content
-
 ## Notes
-
-- Spec: `context/features/markdown-editor-spec.md`
-- Integration points: NewItemDialog content field; ItemDrawer edit and view modes for notes/prompts
-- Custom CSS class `.markdown-preview` for reliable dark mode styling
 
 ## History
 
@@ -250,3 +235,12 @@ In Progress
 - The editor chrome includes macOS window dots, the language label, and a quick copy button
 - Height grows with content up to 400px, with a theme-matching scrollbar for overflow
 - Helpers live in `src/lib/items/code-editor.ts` with Vitest coverage for type checks, language aliases, and height
+
+### Markdown Editor
+
+- Notes and prompts use a `MarkdownEditor` with Write/Preview tabs in create, drawer view, and drawer edit
+- `react-markdown` + `remark-gfm` render GitHub Flavored Markdown; preview styles live under `.markdown-preview`
+- Editor chrome matches the code editor (dark theme, copy button, fluid height up to 400px)
+- Readonly mode shows Preview only; edit mode defaults to Write
+- Snippets and commands stay on `CodeEditor`; Field wrappers no longer use `<label>` around editors so clicks type instead of copying
+- `/collections` and `/collections/[id]` pages list collections and their items so dashboard and sidebar links no longer 404
