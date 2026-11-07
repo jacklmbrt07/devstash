@@ -1,5 +1,4 @@
-import { Star } from "lucide-react";
-
+import { CollectionDetailActions } from "@/components/collections/collection-detail-actions";
 import { ItemCard } from "@/components/items/item-card";
 import {
   getItemTypeLabel,
@@ -22,12 +21,12 @@ export function CollectionDetailView({
           <h1 className="text-2xl font-semibold tracking-tight">
             {collection.name}
           </h1>
-          {collection.isFavorite ? (
-            <Star
-              className="mt-1 size-5 shrink-0 fill-current text-[#fde047]"
-              aria-label="Favorite"
-            />
-          ) : null}
+          <CollectionDetailActions
+            collectionId={collection.id}
+            name={collection.name}
+            description={collection.description}
+            isFavorite={collection.isFavorite}
+          />
         </div>
         {collection.description ? (
           <p className="text-sm text-muted-foreground">

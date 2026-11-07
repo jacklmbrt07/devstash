@@ -1,16 +1,24 @@
-# Current Feature
+# Current Feature: Collection Edit / Delete / Favorite Actions
 
 ## Status
 
-Not Started
+In Progress
 
 ## Goals
 
-<!-- Feature goals -->
+- On `/collections/[id]`, show Edit, Delete, and Favorite action buttons
+- Favorite is UI-only for now (icon/button present; no persistence or toggle logic)
+- Edit opens a modal to update collection metadata (name, description)
+- Delete shows a confirmation dialog; confirming removes the collection, not its items (items remain; they are only unlinked from that collection)
+- On collection cards at `/collections` and the dashboard, the 3-dots menu opens a dropdown with Edit, Delete, and Favorite
+- Clicking anywhere else on a collection card navigates to that collection's page
 
 ## Notes
 
-<!-- Spec notes / constraints -->
+- Do not implement favorites persistence yet — just the icon/button
+- Deleting a collection must not delete items; only remove the collection (and its item associations)
+- Card click vs menu: the 3-dots dropdown must stop propagation so opening the menu does not navigate away
+- Reuse existing patterns for modals, confirmation dialogs, and collection create/update where possible
 
 ## History
 

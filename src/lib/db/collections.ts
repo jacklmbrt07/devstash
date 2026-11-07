@@ -1,4 +1,7 @@
-import type { CreateCollectionData } from "@/lib/collections/create-collection-input";
+import type {
+  CreateCollectionData,
+  UpdateCollectionData,
+} from "@/lib/collections/create-collection-input";
 import type { DashboardItem } from "@/lib/db/items";
 import { db } from "@/prisma/db";
 
@@ -324,4 +327,47 @@ export async function createCollection(
     borderColor: null,
     types: [],
   };
+}
+
+export async function updateCollection(
+  userId: string,
+  collectionId: string,
+  data: UpdateCollectionData,
+): Promise<DashboardCollection | null> {
+  const updated = await db.orm.public.Collection.where({
+    id: collectionId,
+    userId,
+  }).update({
+    name: data.name,
+    description: data.description,
+  });
+  if (!updated) return null;
+
+  const row = await db.orm.public.Collection.where({
+    id: collectionId,
+    userId,
+  })
+    .include("itemCollections", (links) =>
+      links.include("item", (item) =>
+        item
+          .select("id")
+          .include("itemType", (itemType) => itemType.select("name", "color")),
+      ),
+    )
+    .first();
+
+  if (!row) return null;
+  return toDashboardCollection(row);
+}
+
+export async function deleteCollection(
+  userId: string,
+  collectionId: string,
+): Promise<{ id: string } | null> {
+  const deleted = await db.orm.public.Collection.where({
+    id: collectionId,
+    userId,
+  }).delete();
+  if (!deleted) return null;
+  return { id: deleted.id };
 }

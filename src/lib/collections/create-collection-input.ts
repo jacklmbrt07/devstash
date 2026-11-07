@@ -14,4 +14,7 @@ export const createCollectionSchema = z.object({
   description: nullableText,
 });
 
+export const updateCollectionSchema = createCollectionSchema;
+
 export type CreateCollectionData = z.infer<typeof createCollectionSchema>;
+export type UpdateCollectionData = z.infer<typeof updateCollectionSchema>;

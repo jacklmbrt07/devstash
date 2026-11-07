@@ -1,6 +1,9 @@
 import { describe, expect, it } from "vitest";
 
-import { createCollectionSchema } from "./create-collection-input";
+import {
+  createCollectionSchema,
+  updateCollectionSchema,
+} from "./create-collection-input";
 
 describe("createCollectionSchema", () => {
   it("requires a non-empty name", () => {
@@ -47,6 +50,20 @@ describe("createCollectionSchema", () => {
       }),
     ).toEqual({
       name: "Empty desc",
+      description: null,
+    });
+  });
+});
+
+describe("updateCollectionSchema", () => {
+  it("shares create validation for metadata edits", () => {
+    expect(
+      updateCollectionSchema.parse({
+        name: "  Renamed ",
+        description: "  ",
+      }),
+    ).toEqual({
+      name: "Renamed",
       description: null,
     });
   });
